@@ -13,23 +13,17 @@ int main() {
 
     TreeCtor(&tree);
 
-    char data[MAX_LEN] = "Zhivotnoe";
-
-    tree.size = 3;
-
-    strncpy(tree.root->data, data, MAX_LEN);
-
-    strncpy(data, "Poltorashka", MAX_LEN);
-    tree.root->left = NodeCtor(data, tree.root);
-
-    strncpy(data, "Divari", MAX_LEN);
-    tree.root->right = NodeCtor(data, tree.root);
-
     TreeDump(&tree);
 
     StartGuessing(&tree);
+    TreeDump(&tree);
+    StartGuessing(&tree);
 
     TreeDump(&tree);
+
+    NodeDtor(tree.root->left);
+    NodeDtor(tree.root->right);
+    NodeDtor(tree.root);
 
     return 0;
 }

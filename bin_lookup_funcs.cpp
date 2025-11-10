@@ -15,16 +15,21 @@ enum Status TreeCtor(struct Tree* tree)
     if (tree->root == NULL)
         return error;
 
+    tree->size = 1;
+
+    tree->root->data = strdup("Nuchto");
+    tree->root->parent = tree->root;
+
     return success;
 }
 
-struct Node* NodeCtor(char value[MAX_LEN], struct Node* parent)
+struct Node* NodeCtor(char* value, struct Node* parent)
 {
     Node* new_node = (Node*)calloc(1, sizeof(Node));
 
     assert(new_node);
 
-    strncpy(new_node->data, value, MAX_LEN);
+    new_node->data = strdup(value);
     new_node->parent = parent;
 
     return  new_node;
@@ -56,8 +61,11 @@ void StartGuessing(struct Tree* tree)
            current = current->right;
     }
 
-    if (ans == NO)
-        CreateNewNode(current->parent, prev_ans);
+    if (tree->size == 1 && ans == NO)
+        CreateFirstObject(tree);
+
+    else if (ans == NO)
+        CreateNewNode(tree, current->parent, prev_ans);
 
     else
         printf("Вы загадали %s\n", current->data);
@@ -66,54 +74,104 @@ void StartGuessing(struct Tree* tree)
 
 enum Ans GetAnswer(void)
 {
-    char ans[MAX_LEN] = {};
-    scanf("%s", ans);
+    char* ans = NULL;
+    size_t len = MAX_LEN;
+
+    getline(&ans, &len, stdin);
 
     while (strcmp("y", ans) != 0 && strcmp("n", ans) != 0)
     {
         printf("Введите y или n: ");
-        scanf("%s", ans);
+        getline(&ans, &len, stdin);
     }
 
-    if (strcmp("y", ans) == 0)
+    if (strcmp("y", ans) == 0) {
+        free(ans);
         return YES;
+    }
 
+    free(ans);
     return NO;
 }
 
-enum Status CreateNewNode(struct Node* node, enum Ans ans)
+enum Status CreateFirstObject(struct Tree* tree)
+{
+    assert(tree);
+
+    size_t len = 50;
+    char* new_object = NULL;
+    char* difference = NULL;
+    char* old_object = NULL;
+
+    printf("Добавьте первый объект\n");
+    printf("Введите его: ");
+
+    getline(&new_object, &len, stdin);
+
+    old_object = strdup(tree->root->data);
+
+    printf("\nЧем %s отличается от %s, он ... отличается: ", new_object,
+                                                             old_object);
+    getline(&difference, &len, stdin);
+
+    free(tree->root);
+
+    tree->root = NodeCtor(difference, tree->root);
+    tree->root->left = NodeCtor(new_object, tree->root);
+    tree->root->right = NodeCtor(old_object, tree->root);
+
+    tree->size+=2;
+    return success;
+}
+
+enum Status CreateNewNode(struct Tree* tree, struct Node* node, enum Ans ans)
 {
     assert(node);
 
-    char old_object[MAX_LEN] = {};
-    char new_object[MAX_LEN] = {};
-    char difference[MAX_LEN] = {};
-    struct Node* now_node = NULL;
-
-    if (ans == NO)
-        now_node = node->right;
-
-    else
-        now_node = node->left;
-
-    strncpy(old_object, now_node->data, MAX_LEN);
+    size_t len = 50;
+    char* new_object = NULL;
+    char* difference = NULL;
+    char* old_object = NULL;
 
     printf("В нашем справочнике нет такого объекта\n");
     printf("Введите его: ");
 
-    scanf("%49s", new_object);
+    getline(&new_object, &len, stdin);
 
-    printf("\nЧем %s отличается от %s, он ... отличается: ", new_object,
-                                                             now_node->data);
-    scanf("%49s", difference);
+    if (ans == NO) {
+        old_object = strdup(node->right->data);
 
-    free(now_node);
+        printf("\nЧем %s отличается от %s, он ... отличается: ", new_object,
+                                                                 old_object);
+        getline(&difference, &len, stdin);
 
-    now_node = NodeCtor(difference, node);
-    now_node->left = NodeCtor(new_object, now_node);
-    now_node->right = NodeCtor(old_object, now_node);
+        free(node->right);
 
-    printf("\n");
+        node->right = NodeCtor(difference, node);
+        node->right->left = NodeCtor(new_object, node->right);
+        node->right->right = NodeCtor(old_object, node->right);
+    }
+
+    else {
+        old_object = strdup(node->left->data);
+
+        printf("\nЧем %s отличается от %s, он ... отличается: ", new_object,
+                                                                 old_object);
+        getline(&difference, &len, stdin);
+
+        free(node->left);
+
+        node->left = NodeCtor(difference, node);
+        node->left->left = NodeCtor(new_object, node->left);
+        node->left->right = NodeCtor(old_object, node->left);
+
+    }
+
+    free(difference);
+    free(new_object);
+    free(old_object);
+
+    tree->size+=2;
 
     return success;
 }
@@ -137,12 +195,22 @@ void OpenLogFile(const char* log_file_name)
     fprintf(log_file, "<pre>\n");
 }
 
+void NodeDtor(struct Node* node)
+{
+    assert(node != NULL);
+
+    free(node->left);
+    free(node->right);
+    free(node->data);
+    free(node);
+}
+
 ssize_t getline(char** dest, size_t* n, FILE* file){
     assert(dest != NULL);
     assert(file != NULL);
 
     const int INCREASE_BUFFER = 2;
-    const int DEFAULT_BUFFER = 1024;
+    const int DEFAULT_BUFFER = 64;
 
     if (*dest == NULL){
         *n = DEFAULT_BUFFER;
