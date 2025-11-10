@@ -3,19 +3,19 @@
 
 //GET
 
-struct Node* GetYes(const struct Node* node);
+struct Node* GetLeft(struct Node* node);
 
-struct Node* GetNo(const struct Node* node);
+struct Node* GetRight(struct Node* node);
 
-struct Node* GetRoot(const struct Tree* tree);
+int GetSize(struct Tree* tree);
 
-int GetSize(const struct Tree* tree);
+struct Node* GetRoot(struct Tree* tree);
 
 //SET
 
-void SetYes(struct Node* node, struct Node* new_left);
+void SetLeft(struct Node* node, struct Node* new_left);
 
-void SetNo(struct Node* node, struct Node* new_right);
+void SetRight(struct Node* node, struct Node* new_right);
 
 void SetRoot(struct Tree* tree, struct Node* new_root);
 

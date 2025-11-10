@@ -13,24 +13,21 @@ int main() {
 
     TreeCtor(&tree);
 
-    char data[MAX_LEN] = "Zhivotnoe?";
+    char data[MAX_LEN] = "Zhivotnoe";
 
     tree.size = 3;
 
     strncpy(tree.root->data, data, MAX_LEN);
-    printf("PTR_ROOT: %p  DATA: %s\n", tree.root, tree.root->data);
 
     strncpy(data, "Poltorashka", MAX_LEN);
+    tree.root->left = NodeCtor(data, tree.root);
 
+    strncpy(data, "Divari", MAX_LEN);
+    tree.root->right = NodeCtor(data, tree.root);
 
-    tree.root->yes = NodeCtor(data);
-    printf("PTR: %p  DATA: %s\n", tree.root->yes, tree.root->yes->data);
+    TreeDump(&tree);
 
-
-    strncpy(data, "Petrovich", MAX_LEN);
-
-    tree.root->no = NodeCtor(data);
-    printf("PTR: %p  DATA: %s\n", tree.root->no, tree.root->no->data);
+    StartGuessing(&tree);
 
     TreeDump(&tree);
 

@@ -45,7 +45,7 @@ void TreeDump(struct Tree* tree)
 
 }
 
-void PrintBazeNode(FILE* graphiz_file, const struct Tree* tree)
+void PrintBazeNode(FILE* graphiz_file, struct Tree* tree)
 {
     assert(tree);
     assert(graphiz_file);
@@ -61,7 +61,7 @@ void PrintBazeNode(FILE* graphiz_file, const struct Tree* tree)
 
 }
 
-void PrintBazeEdge(FILE* graphiz_file, const struct Tree* tree)
+void PrintBazeEdge(FILE* graphiz_file, struct Tree* tree)
 {
     assert(tree);
     assert(graphiz_file);
@@ -70,7 +70,7 @@ void PrintBazeEdge(FILE* graphiz_file, const struct Tree* tree)
                                                                  GetRoot(tree));
 }
 
-void PrintTree(const struct Node* node, FILE* graphiz_file)
+void PrintTree(struct Node* node, FILE* graphiz_file)
 {
     assert(node);
     assert(graphiz_file);
@@ -80,39 +80,41 @@ void PrintTree(const struct Node* node, FILE* graphiz_file)
     PrintGraphizNode(graphiz_file, node);
     PrintGraphizEdge(graphiz_file, node);
 
-    if (GetYes(node))
-        PrintTree(GetYes(node), graphiz_file);
+    if (GetLeft(node)){
+        //printf("PTR: %p   PTR_LEFT: %p\n  ",node,  GetLeft(node));
+        PrintTree(GetLeft(node), graphiz_file);
+    }
 
     //printf("%d", GetData(node));
 
-    if (GetNo(node))
-        PrintTree(GetNo(node), graphiz_file);
+    if (GetRight(node))
+        PrintTree(GetRight(node), graphiz_file);
 
     //printf(")");
 
 }
 
-void PrintGraphizEdge(FILE* graphiz_file, const struct Node* node)
+void PrintGraphizEdge(FILE* graphiz_file, struct Node* node)
 {
     assert(node);
     assert(graphiz_file);
 
-    if (GetYes(node) != NULL && GetNo(node) != NULL)
+    if (GetLeft(node) != NULL && GetRight(node) != NULL)
         fprintf(graphiz_file, "node%p -> { node%p node%p } [dir = both]\n",
                                                                node,
-                                                               GetYes(node),
-                                                               GetNo(node));
+                                                               GetLeft(node),
+                                                               GetRight(node));
 
-    else if (GetYes(node) != NULL && GetNo(node) == NULL)
+    else if (GetLeft(node) != NULL && GetRight(node) == NULL)
         fprintf(graphiz_file, "node%p -> { node%p } [dir = both]\n", node,
-                                                                     GetYes(node));
+                                                                     GetLeft(node));
 
-    else if (GetYes(node) == NULL && GetNo(node) != NULL)
+    else if (GetLeft(node) == NULL && GetRight(node) != NULL)
         fprintf(graphiz_file, "node%p -> { node%p } [dir = both]\n", node,
-                                                                     GetNo(node));
+                                                                     GetRight(node));
 }
 
-void PrintGraphizNode(FILE* graphiz_file, const struct Node* node)
+void PrintGraphizNode(FILE* graphiz_file, struct Node* node)
 {
     assert(node);
     assert(graphiz_file);

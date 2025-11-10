@@ -6,27 +6,27 @@
 
 //GET
 
-struct Node* GetYes(const struct Node* node)
+struct Node* GetLeft(struct Node* node)
 {
     assert(node);
 
-    return node->yes;
+    return node->left;
 }
 
-struct Node* GetNo(const struct Node* node)
+struct Node* GetRight(struct Node* node)
 {
     assert(node);
 
-    return node->no;
+    return node->right;
 }
 
-struct Node* GetRoot(const struct Tree* tree)
+struct Node* GetRoot(struct Tree* tree)
 {
     assert(tree);
     return tree->root;
 }
 
-int GetSize(const struct Tree* tree)
+int GetSize(struct Tree* tree)
 {
     assert(tree);
 
@@ -35,18 +35,18 @@ int GetSize(const struct Tree* tree)
 
 //SET
 
-void SetYes(struct Node* node, struct Node* new_left)
+void SetLeft(struct Node* node, struct Node* new_left)
 {
     assert(node);
 
-    node->yes = new_left;
+    node->left = new_left;
 }
 
-void SetNo(struct Node* node, struct Node* new_right)
+void SetRight(struct Node* node, struct Node* new_right)
 {
     assert(node);
 
-    node->no = new_right;
+    node->right = new_right;
 }
 
 void SetRoot(struct Tree* tree, struct Node* new_root)

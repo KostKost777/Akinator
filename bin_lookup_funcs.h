@@ -3,6 +3,12 @@
 
 const int MAX_LEN = 50;
 
+enum Ans
+{
+    YES = 1,
+    NO = 0
+};
+
 enum Status
 {
     success = 0,
@@ -11,9 +17,10 @@ enum Status
 
 struct Node
 {
+    struct Node* parent;
     char data[MAX_LEN];
-    struct Node* yes;
-    struct Node* no;
+    struct Node* left;
+    struct Node* right;
 };
 
 struct Tree
@@ -27,7 +34,13 @@ extern FILE* log_file;
 
 enum Status TreeCtor(struct Tree* tree);
 
-struct Node* NodeCtor(char value[MAX_LEN]);
+enum Ans GetAnswer(void);
+
+struct Node* NodeCtor(char value[MAX_LEN], struct Node* parent);
+
+enum Status CreateNewNode(struct Node* node, enum Ans ans);
+
+void StartGuessing(struct Tree* tree);
 
 void CloseLogFile();
 
