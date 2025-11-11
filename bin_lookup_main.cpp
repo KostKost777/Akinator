@@ -4,7 +4,7 @@
 #include "bin_lookup_dump_funcs.h"
 #include "bin_lookup_get_set_funcs.h"
 
-int main() {
+int main(int argc, char* argv[]) {
 
     atexit(CloseLogFile);
     OpenLogFile("bin_lookup_log_file.html");

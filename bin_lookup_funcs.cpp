@@ -121,6 +121,11 @@ enum Status CreateFirstObject(struct Tree* tree)
     tree->root->right = NodeCtor(old_object, tree->root);
 
     tree->size+=2;
+
+    FILE* database_file = fopen("database.txt", "w");
+    UpdateDataBase(GetRoot(tree), database_file);
+    fclose(database_file);
+
     return success;
 }
 
@@ -173,7 +178,34 @@ enum Status CreateNewNode(struct Tree* tree, struct Node* node, enum Ans ans)
 
     tree->size+=2;
 
+    FILE* database_file = fopen("database.txt", "w");
+    UpdateDataBase(GetRoot(tree), database_file);
+    fclose(database_file);
+
     return success;
+}
+
+void UpdateDataBase(struct Node* node, FILE* database_file)
+{
+
+    assert(node);
+    assert(database_file);
+
+    fprintf(database_file,"(");
+    fprintf(database_file, "\"%s\"", node->data);
+
+    if (GetLeft(node))
+        UpdateDataBase(GetLeft(node), database_file);
+    else
+        fprintf(database_file, "$");
+
+    if (GetRight(node))
+        UpdateDataBase(GetRight(node), database_file);
+    else
+        fprintf(database_file, "$");
+
+    fprintf(database_file, ")");
+
 }
 
 void CloseLogFile()

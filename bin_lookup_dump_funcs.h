@@ -13,6 +13,8 @@ void PrintBazeNode(FILE* graphiz_file, struct Tree* tree);
 
 void PrintBazeEdge(FILE* graphiz_file, struct Tree* tree);
 
+char* GetPrettyPtr(void* ptr);
+
 void FillLogFile(char* image_file_name, struct Tree* tree, int file_counter);
 
 static char* GetNewDotCmd(int file_counter);

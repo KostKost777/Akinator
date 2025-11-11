@@ -119,13 +119,59 @@ void PrintGraphizNode(FILE* graphiz_file, struct Node* node)
     assert(node);
     assert(graphiz_file);
 
+    char* left_ptr = GetPrettyPtr(node->left);
+    char* right_ptr = GetPrettyPtr(node->right);
+    char* parent_ptr = GetPrettyPtr(node->parent);
+    char* node_ptr = GetPrettyPtr(node);
+
     fprintf(graphiz_file, "node%p "
                           "[shape = Mrecord, "
                           "style = filled, "
                           "fillcolor = \"#8ABAD3\", "
                           "color = \"#00000\", "
-                          "label = \" {PTR: %p | DATA: %s} \""
-                          "]", node, node, node->data);
+                          "label = \" {PARANT_PTR: %s| PTR: %s | DATA: %s",
+                          node, parent_ptr, node_ptr, node->data);
+
+    if (node->left != NULL && node->right != NULL)
+        fprintf(graphiz_file, " | {YES \\n PTR: %s | NO \\n PTR: %s}} \" ]\n",
+                                                                     left_ptr,
+                                                                     right_ptr);
+
+    else
+        fprintf(graphiz_file, "} \" ]\n");
+
+    free(left_ptr);
+    free(right_ptr);
+    free(parent_ptr);
+    free(node_ptr);
+}
+
+char* GetPrettyPtr(void* ptr)
+{
+    const int BUFFER_SIZE = 9;
+    const int PRETTY_PTR_LEN = 11;
+
+    char* pretty_ptr = (char*)calloc(PRETTY_PTR_LEN, sizeof(char));
+    char buffer[BUFFER_SIZE] = {};
+
+    snprintf(buffer, BUFFER_SIZE, "%p", ptr);
+
+    int ptr_index = 0;
+
+    for (int buffer_index = 0; buffer_index < BUFFER_SIZE; buffer_index++,
+                                                           ptr_index++)
+    {
+        if (buffer_index == 2 || buffer_index == 5)
+        {
+            pretty_ptr[ptr_index] = '-';
+            ptr_index++;
+        }
+
+        pretty_ptr[ptr_index] = toupper(buffer[buffer_index]);
+
+    }
+
+    return pretty_ptr;
 }
 
 void FillLogFile(char* image_file_name, struct Tree* tree, int file_counter)
@@ -140,7 +186,6 @@ void FillLogFile(char* image_file_name, struct Tree* tree, int file_counter)
 
     fflush(log_file);
 }
-
 
 static char* GetNewDotCmd(int file_counter)
 {

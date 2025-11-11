@@ -44,6 +44,8 @@ enum Status CreateNewNode(struct Tree* tree, struct Node* node, enum Ans ans);
 
 enum Status CreateFirstObject(struct Tree* tree);
 
+void UpdateDataBase(struct Node* node, FILE* database_file);
+
 void StartGuessing(struct Tree* tree);
 
 void CloseLogFile();
