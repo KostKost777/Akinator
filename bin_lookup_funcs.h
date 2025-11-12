@@ -5,14 +5,23 @@ const int MAX_LEN = 50;
 
 enum Ans
 {
-    YES = 1,
-    NO = 0
+    EMPTY = 0,
+    YES,
+    NO,
+};
+
+enum Mode
+{
+    DESCR = 0,
+    GUESS,
+    EXIT,
+    COMP
 };
 
 enum Status
 {
     success = 0,
-    error = 1
+    error
 };
 
 struct Node
@@ -38,15 +47,45 @@ enum Ans GetAnswer(void);
 
 void NodeDtor(struct Node* node);
 
-struct Node* NodeCtor(char value[MAX_LEN], struct Node* parent);
+struct Node* NodeCtor(char* value, struct Node* parent);
 
-enum Status CreateNewNode(struct Tree* tree, struct Node* node, enum Ans ans);
+void PrintAkinatorOptions(void);
 
-enum Status CreateFirstObject(struct Tree* tree);
+enum Status StartAkinator(struct Tree* tree);
+
+enum Status CreateNewNode(struct Tree* tree, struct Node* node);
 
 void UpdateDataBase(struct Node* node, FILE* database_file);
 
-void StartGuessing(struct Tree* tree);
+enum Status GetDescription(struct Node* node, char* name, Ans* path);
+
+enum Status FindDescription(struct Tree* tree);
+
+enum Status PrintDescription(struct Node* node, char* name, Ans* path);
+
+enum Status Guess(struct Tree* tree);
+
+void TreeDtor(struct Tree* tree);
+
+void DeleteNode(struct Tree* tree, struct Node* node);
+
+enum Status Comparation(struct Tree* tree);
+
+enum Status FillComparationArray(struct Node* node, char* name, Ans* comp_arr);
+
+enum Status PrintComparison (struct Node* node1, struct Node* node2,
+                             char* object_1, char* object_2,
+                             Ans* object_1_path, Ans* object_2_path);
+
+enum Status PrintDiffDescription(struct Node** node,
+                                 char* obj_1, char* obj_2,
+                                 Ans** path_to_obj);
+
+enum Status PrintEqualDescription(struct Node** node_1, struct Node** node_2,
+                                  char* obj_1, char* obj_2,
+                                  Ans** path_to_obj_1, Ans** path_to_obj_2);
+
+enum Mode GetMode(void);
 
 void CloseLogFile();
 

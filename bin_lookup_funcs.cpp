@@ -35,41 +35,294 @@ struct Node* NodeCtor(char* value, struct Node* parent)
     return  new_node;
 }
 
-void StartGuessing(struct Tree* tree)
+void PrintAkinatorOptions(void)
+{
+    printf("\n\n\n------------This is Akinator------------\n\n"
+           "            Choose options:\n\n"
+           "            Guessing    - [g]\n"
+           "            Description - [d]\n"
+           "            Comparation - [c]\n"
+           "            Exit        - [e]\n\n\n");
+}
+
+enum Status StartAkinator(struct Tree* tree)
+{
+    assert(tree);
+
+    while (true)
+    {
+        PrintAkinatorOptions();
+
+        printf("Enter option: ");
+
+        enum Mode mode = GetMode();
+
+        switch(mode)
+        {
+            case EXIT: return success;
+
+            case GUESS: Guess(tree);
+                       break;
+
+            case DESCR: FindDescription(tree);
+                        break;
+
+            case COMP: Comparation(tree);
+                       break;
+
+            default: return error;
+        }
+    }
+
+    return success;
+}
+
+enum Status FindDescription(struct Tree* tree)
+{
+    assert(tree);
+
+    size_t len = MAX_LEN;
+    char* name = NULL;
+
+    printf("Enter object name: ");
+    getline(&name, &len, stdin);
+
+    Ans* path_to_object = (Ans*)calloc(tree->size, sizeof(Ans));
+
+    if (GetDescription(GetRoot(tree), name, path_to_object) == error)
+    {
+        printf("I do not know who is |%s|\n", name);
+
+        free(path_to_object);
+        path_to_object = NULL;
+
+        return error;
+    }
+
+    PrintDescription(GetRoot(tree), name, path_to_object);
+
+    free(path_to_object);
+    path_to_object = NULL;
+
+    return success;
+}
+
+enum Status Guess(struct Tree* tree)
 {
     assert(tree);
 
     Node* current = GetRoot(tree);
 
-    enum Ans ans = NO;
-    enum Ans prev_ans = NO;
+    enum Ans ans = EMPTY;
 
     while(true)
     {
-        printf("%s? (y/n): ", current->data);
+        printf("This is %s? (y/n): ", current->data);
 
-        prev_ans = ans;
         ans = GetAnswer();
 
         if (current->left == NULL && current->right == NULL)
             break;
 
-        if (ans == YES)
-            current = current->left;
+        switch(ans)
+        {
+            case YES: current = GetLeft(current);
+                      break;
 
-        else
-           current = current->right;
+            case NO: current = GetRight(current);
+                     break;
+
+            case EMPTY:
+            default: return error;
+
+        }
     }
 
-    if (tree->size == 1 && ans == NO)
-        CreateFirstObject(tree);
+    switch(ans)
+        {
+            case YES: printf("I know, you wish this: %s\n", current->data);
+                      return success;
 
-    else if (ans == NO)
-        CreateNewNode(tree, current->parent, prev_ans);
+            case NO: CreateNewNode(tree, current);
+                     return success;
 
-    else
-        printf("Вы загадали %s\n", current->data);
+            case EMPTY:
+            default: return error;
+        }
 
+    return error;
+}
+
+enum Status Comparation(struct Tree* tree)
+{
+    assert(tree);
+
+    size_t len = MAX_LEN;
+    char* obj_1 = NULL;
+    char* obj_2 = NULL;
+
+    printf("Enter two objects you want to compare\n");
+
+    printf("Input first object name: ");
+    getline(&obj_1, &len, stdin);
+
+    printf("Input second object name: ");
+    getline(&obj_2, &len, stdin);
+
+    Ans* path_to_obj_1 = (Ans*)calloc(tree->size, sizeof(Ans));
+    Ans* path_to_obj_2 = (Ans*)calloc(tree->size, sizeof(Ans));
+
+    if(GetDescription(tree->root, obj_1, path_to_obj_1))
+    {
+        printf("I do not know who is |%s|\n", obj_1);
+        return error;
+    }
+
+    if(GetDescription(tree->root, obj_2, path_to_obj_2))
+    {
+        printf("I do not know who is |%s|\n", obj_2);
+        return error;
+    }
+
+    PrintComparison(tree->root, tree->root,
+                    obj_1, obj_2,
+                    path_to_obj_1, path_to_obj_2);
+
+    free(path_to_obj_1);
+    free(path_to_obj_2);
+    free(obj_1);
+    free(obj_2);
+
+    return success;
+}
+
+enum Status PrintComparison (struct Node* node_1, struct Node* node_2,
+                             char* obj_1, char* obj_2,
+                             Ans* path_to_obj_1, Ans* path_to_obj_2)
+{
+    assert(node_1);
+    assert(node_2);
+    assert(obj_1);
+    assert(obj_2);
+    assert(path_to_obj_1);
+    assert(path_to_obj_2);
+
+    while(*path_to_obj_1 != EMPTY || *path_to_obj_2 != EMPTY)
+    {
+        if (*path_to_obj_1 == *path_to_obj_2)
+        {
+            PrintEqualDescription(&node_1, &node_2,
+                                  obj_1, obj_2,
+                                  &path_to_obj_1, &path_to_obj_2);
+            continue;
+        }
+
+        if (*path_to_obj_1 != EMPTY)
+            PrintDiffDescription(&node_1,
+                                 obj_1, obj_2,
+                                 &path_to_obj_1);
+
+        if (*path_to_obj_2 != EMPTY)
+            PrintDiffDescription(&node_2,
+                                 obj_2, obj_1,
+                                 &path_to_obj_2);
+    }
+
+    return success;
+}
+
+enum Status PrintEqualDescription(struct Node** node_1, struct Node** node_2,
+                                  char* obj_1, char* obj_2,
+                                  Ans** path_to_obj_1, Ans** path_to_obj_2)
+{
+    assert(node_1);
+    assert(node_2);
+    assert(obj_1);
+    assert(obj_2);
+    assert(path_to_obj_1);
+    assert(path_to_obj_2);
+
+
+
+    if (**path_to_obj_1 == YES)
+    {
+        printf("%s and %s both: %s\n", obj_1, obj_2, (*node_1)->data);
+        *node_1 = GetLeft(*node_1);
+        *node_2 = GetLeft(*node_2);
+    }
+
+    if (**path_to_obj_1 == NO)
+    {
+        printf("%s and %s both aren`t: %s\n", obj_1, obj_2, (*node_1)->data);
+        *node_1 = GetRight(*node_1);
+        *node_2 = GetRight(*node_2);
+    }
+
+    (*path_to_obj_1)++;
+    (*path_to_obj_2)++;
+
+    return success;
+}
+
+enum Status PrintDiffDescription(struct Node** node,
+                                 char* obj_1, char* obj_2,
+                                 Ans** path_to_obj)
+{
+    assert(node);
+    assert(obj_1);
+    assert(obj_2);
+    assert(path_to_obj);
+
+    if (**path_to_obj == YES)
+    {
+        printf("%s is %s, but %s isn`t\n", obj_1, (*node)->data, obj_2);
+        *node = GetLeft(*node);
+    }
+
+    if (**path_to_obj == NO)
+    {
+        *node = GetRight(*node);
+    }
+
+    (*path_to_obj)++;
+
+    return success;
+
+}
+
+enum Mode GetMode(void)
+{
+    char* ans = NULL;
+    size_t len = MAX_LEN;
+
+    getline(&ans, &len, stdin);
+
+    while (true)
+    {
+        if (strlen(ans) == 1 && (ans[0] == 'e' || ans[0] == 'd'
+                              || ans[0] == 'g' || ans[0] == 'c'))
+            break;
+
+        else
+        {
+            printf("Incorrect input, try again: ");
+            getline(&ans, &len, stdin);
+        }
+    }
+
+    char mode = ans[0];
+
+    free(ans);
+    ans = NULL;
+
+    switch(mode)
+    {
+        case 'e': return EXIT;
+        case 'd': return DESCR;
+        case 'g': return GUESS;
+        case 'c': return COMP;
+        default:  return EXIT;
+    }
 }
 
 enum Ans GetAnswer(void)
@@ -79,130 +332,134 @@ enum Ans GetAnswer(void)
 
     getline(&ans, &len, stdin);
 
-    while (strcmp("y", ans) != 0 && strcmp("n", ans) != 0)
+    while (true)
     {
-        printf("Введите y или n: ");
-        getline(&ans, &len, stdin);
+        if (strlen(ans) == 1 && (ans[0] == 'y' || ans[0] == 'n'))
+            break;
+
+        else
+        {
+            printf("Incorrect input, try again: ");
+            getline(&ans, &len, stdin);
+        }
     }
 
-    if (strcmp("y", ans) == 0) {
-        free(ans);
-        return YES;
-    }
+    char answer = ans[0];
 
     free(ans);
-    return NO;
+    ans = NULL;
+
+    switch(answer)
+    {
+        case 'y': return YES;
+        case 'n': return NO;
+        default:  return EMPTY;
+    }
 }
 
-enum Status CreateFirstObject(struct Tree* tree)
+enum Status GetDescription(struct Node* node, char* name, Ans* path)
 {
-    assert(tree);
+    assert(node);
+    assert(name);
+    assert(path);
 
-    size_t len = 50;
-    char* new_object = NULL;
-    char* difference = NULL;
-    char* old_object = NULL;
+    if (strcmp(node->data, name) == 0)
+        return success;
 
-    printf("Добавьте первый объект\n");
-    printf("Введите его: ");
+    if (    GetLeft(node) != NULL
+        && (GetDescription(GetLeft(node), name, path + 1) == success))
+    {
+        *path = YES;
+        return success;
+    }
 
-    getline(&new_object, &len, stdin);
+    if (    GetRight(node) != NULL
+        && (GetDescription(GetRight(node), name, path + 1) == success))
+    {
+        *path = NO;
+        return success;
+    }
 
-    old_object = strdup(tree->root->data);
+    return error;
+}
 
-    printf("\nЧем %s отличается от %s, он ... отличается: ", new_object,
-                                                             old_object);
-    getline(&difference, &len, stdin);
+enum Status PrintDescription(struct Node* node, char* name, Ans* path)
+{
+    assert(node);
+    assert(name);
+    assert(path);
 
-    free(tree->root);
+    printf("Description of %s here: ", name);
 
-    tree->root = NodeCtor(difference, tree->root);
-    tree->root->left = NodeCtor(new_object, tree->root);
-    tree->root->right = NodeCtor(old_object, tree->root);
+    while (*path != EMPTY)
+    {
+        if (*path == YES)
+        {
+            printf("it is %s and ", node->data);
+            node = GetLeft(node);
+        }
 
-    tree->size+=2;
+        else
+        {
+            printf("it is not %s and ", node->data);
+            node = GetRight(node);
+        }
 
-    FILE* database_file = fopen("database.txt", "w");
-    UpdateDataBase(GetRoot(tree), database_file);
-    fclose(database_file);
+        path++;
+    }
+
+    printf("this is all about %s", name);
 
     return success;
 }
 
-enum Status CreateNewNode(struct Tree* tree, struct Node* node, enum Ans ans)
+enum Status CreateNewNode(struct Tree* tree, struct Node* node)
 {
     assert(node);
+    assert(tree);
 
-    size_t len = 50;
+    size_t len = MAX_LEN;
     char* new_object = NULL;
-    char* difference = NULL;
-    char* old_object = NULL;
 
-    printf("В нашем справочнике нет такого объекта\n");
-    printf("Введите его: ");
+    printf("I don't know this object\n");
+    printf("Enter its name: ");
 
     getline(&new_object, &len, stdin);
 
-    if (ans == NO) {
-        old_object = strdup(node->right->data);
+    printf("What is the difference between %s and a %s?: ", new_object,
+                                                            node->data);
+    node->right = NodeCtor(node->data, node);
+    node->left = NodeCtor(new_object, node);
 
-        printf("\nЧем %s отличается от %s, он ... отличается: ", new_object,
-                                                                 old_object);
-        getline(&difference, &len, stdin);
+    getline(&node->data, &len, stdin);
 
-        free(node->right);
-
-        node->right = NodeCtor(difference, node);
-        node->right->left = NodeCtor(new_object, node->right);
-        node->right->right = NodeCtor(old_object, node->right);
-    }
-
-    else {
-        old_object = strdup(node->left->data);
-
-        printf("\nЧем %s отличается от %s, он ... отличается: ", new_object,
-                                                                 old_object);
-        getline(&difference, &len, stdin);
-
-        free(node->left);
-
-        node->left = NodeCtor(difference, node);
-        node->left->left = NodeCtor(new_object, node->left);
-        node->left->right = NodeCtor(old_object, node->left);
-
-    }
-
-    free(difference);
     free(new_object);
-    free(old_object);
+    new_object = NULL;
 
-    tree->size+=2;
+    tree->size += 2;
 
-    FILE* database_file = fopen("database.txt", "w");
-    UpdateDataBase(GetRoot(tree), database_file);
-    fclose(database_file);
+    TreeDump(tree);
 
     return success;
 }
 
 void UpdateDataBase(struct Node* node, FILE* database_file)
 {
-
     assert(node);
     assert(database_file);
 
     fprintf(database_file,"(");
     fprintf(database_file, "\"%s\"", node->data);
 
-    if (GetLeft(node))
+    if (GetLeft(node) != NULL)
         UpdateDataBase(GetLeft(node), database_file);
     else
-        fprintf(database_file, "$");
+        fprintf(database_file, "nil");
 
-    if (GetRight(node))
+    if (GetRight(node) != NULL)
         UpdateDataBase(GetRight(node), database_file);
     else
-        fprintf(database_file, "$");
+        fprintf(database_file, "nil");
 
     fprintf(database_file, ")");
 
@@ -227,31 +484,60 @@ void OpenLogFile(const char* log_file_name)
     fprintf(log_file, "<pre>\n");
 }
 
-void NodeDtor(struct Node* node)
+void DeleteNode(struct Tree* tree, struct Node* node)
 {
-    assert(node != NULL);
+    assert(node);
+    assert(tree);
+
+    if (node->left != NULL) {
+        DeleteNode(tree, node->left);
+    }
+
+    if (node->left != NULL)
+        tree->size--;
 
     free(node->left);
+    node->left = NULL;
+
+    if (node->right != NULL) {
+        DeleteNode(tree, node->right);
+    }
+
+    if (node->right != NULL)
+        tree->size--;
+
     free(node->right);
-    free(node->data);
-    free(node);
+    node->right = NULL;
 }
 
-ssize_t getline(char** dest, size_t* n, FILE* file){
+void TreeDtor(struct Tree* tree)
+{
+    DeleteNode(tree, tree->root);
+
+    free(tree->root);
+    tree->root = NULL;
+    tree->size = 0;
+}
+
+ssize_t getline(char** dest, size_t* n, FILE* file)
+{
     assert(dest != NULL);
     assert(file != NULL);
 
     const int INCREASE_BUFFER = 2;
     const int DEFAULT_BUFFER = 64;
 
-    if (*dest == NULL){
+    if (*dest == NULL)
+    {
         *n = DEFAULT_BUFFER;
         *dest = (char* )calloc(*n, sizeof(char));
     }
 
     char char_from_file = '\0';
     size_t counter = 0;
-    while(true){
+
+    while(true)
+    {
         char_from_file = (char)fgetc(file);
 
         if (char_from_file == EOF)
@@ -260,22 +546,29 @@ ssize_t getline(char** dest, size_t* n, FILE* file){
         else if (char_from_file == '\n')
             break;
 
-        else if (counter > *n - 1){
+        else if (counter > *n - 1)
+        {
            (*n) *= INCREASE_BUFFER;
+
            char* check = (char* )realloc(*dest, *n);
-           if (check == NULL){
+
+           if (check == NULL)
+           {
                 free(*dest);
                 *dest = NULL;
+
                 return -1;
            }
+
             *dest = check;
            (*dest)[counter] = char_from_file;
-        }else
 
+        }
+
+        else
             (*dest)[counter] = char_from_file;
 
         counter++;
-
     }
 
     (*dest)[counter] = '\0';

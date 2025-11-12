@@ -3,27 +3,36 @@
 #include "bin_lookup_funcs.h"
 #include "bin_lookup_dump_funcs.h"
 #include "bin_lookup_get_set_funcs.h"
+#include "read_database_from_file.h"
 
-int main(int argc, char* argv[]) {
+int main() {
 
     atexit(CloseLogFile);
     OpenLogFile("bin_lookup_log_file.html");
+
+    struct Buffer buffer = {};
+
+    GetDataBaseFromFile(&buffer, "database.txt");
+
+    printf("BUFFER: %s\n SIZE: %d\n", buffer.data, buffer.size);
 
     struct Tree tree = {};
 
     TreeCtor(&tree);
 
-    TreeDump(&tree);
-
-    StartGuessing(&tree);
-    TreeDump(&tree);
-    StartGuessing(&tree);
+    //FillNodeDataFromBuffer(buffer.data, tree.root);
 
     TreeDump(&tree);
 
-    NodeDtor(tree.root->left);
-    NodeDtor(tree.root->right);
-    NodeDtor(tree.root);
+    StartAkinator(&tree);
+
+    TreeDump(&tree);
+
+    FILE* database_file = fopen("database.txt", "w");
+    UpdateDataBase(GetRoot(&tree), database_file);
+    fclose(database_file);
+
+    TreeDtor(&tree);
 
     return 0;
 }
