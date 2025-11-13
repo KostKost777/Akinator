@@ -4,6 +4,8 @@
 #include "bin_lookup_dump_funcs.h"
 #include "bin_lookup_get_set_funcs.h"
 #include "read_database_from_file.h"
+#include "STACK\stack_functions.h"
+#include "STACK\dump_functions.h"
 
 FILE* log_file = NULL;
 
@@ -81,22 +83,21 @@ enum Status FindDescription(struct Tree* tree)
     printf("Enter object name: ");
     getline(&name, &len, stdin);
 
-    Ans* path_to_object = (Ans*)calloc(tree->size, sizeof(Ans));
+    INIT_STACK(stk_path);
+    StackCtor(&stk_path, 2);
 
-    if (GetDescription(GetRoot(tree), name, path_to_object) == error)
+    if (GetDescription(GetRoot(tree), name, &stk_path) == error)
     {
         printf("I do not know who is |%s|\n", name);
 
-        free(path_to_object);
-        path_to_object = NULL;
+        StackDtor(&stk_path);
 
         return error;
     }
 
-    PrintDescription(GetRoot(tree), name, path_to_object);
+    PrintDescription(GetRoot(tree), name, &stk_path);
 
-    free(path_to_object);
-    path_to_object = NULL;
+    StackDtor(&stk_path);
 
     return success;
 }
@@ -163,123 +164,119 @@ enum Status Comparation(struct Tree* tree)
     printf("Input second object name: ");
     getline(&obj_2, &len, stdin);
 
-    Ans* path_to_obj_1 = (Ans*)calloc(tree->size, sizeof(Ans));
-    Ans* path_to_obj_2 = (Ans*)calloc(tree->size, sizeof(Ans));
+    INIT_STACK(stk_1_path);
+    StackCtor(&stk_1_path, 2);
 
-    if(GetDescription(tree->root, obj_1, path_to_obj_1))
+    INIT_STACK(stk_2_path);
+    StackCtor(&stk_2_path, 2);
+
+    if(GetDescription(tree->root, obj_1, &stk_1_path))
     {
         printf("I do not know who is |%s|\n", obj_1);
+        StackDtor(&stk_1_path);
         return error;
     }
 
-    if(GetDescription(tree->root, obj_2, path_to_obj_2))
+    if(GetDescription(tree->root, obj_2, &stk_2_path))
     {
         printf("I do not know who is |%s|\n", obj_2);
+        StackDtor(&stk_2_path);
         return error;
     }
 
     PrintComparison(tree->root, tree->root,
                     obj_1, obj_2,
-                    path_to_obj_1, path_to_obj_2);
+                    &stk_1_path, &stk_2_path);
 
-    free(path_to_obj_1);
-    free(path_to_obj_2);
-    free(obj_1);
-    free(obj_2);
+    StackDtor(&stk_1_path);
+    StackDtor(&stk_2_path);
 
     return success;
 }
 
 enum Status PrintComparison (struct Node* node_1, struct Node* node_2,
                              char* obj_1, char* obj_2,
-                             Ans* path_to_obj_1, Ans* path_to_obj_2)
+                             struct Stack* stk_1_path, struct Stack* stk_2_path)
 {
     assert(node_1);
     assert(node_2);
     assert(obj_1);
     assert(obj_2);
-    assert(path_to_obj_1);
-    assert(path_to_obj_2);
 
-    while(*path_to_obj_1 != EMPTY || *path_to_obj_2 != EMPTY)
+    StackValueType last_el_1 = EMPTY;
+    StackValueType last_el_2 = EMPTY;
+
+    while(stk_1_path->size != 0 || stk_2_path->size != 0)
     {
-        if (*path_to_obj_1 == *path_to_obj_2 && node_1 == node_2)
+        if (stk_1_path->size != 0)
+            StackPop(stk_1_path, &last_el_1);
+
+        if (stk_2_path->size != 0)
+            StackPop(stk_2_path, &last_el_2);
+
+        if (last_el_1 == last_el_2 && node_1 == node_2)
         {
             PrintEqualDescription(&node_1, &node_2,
-                                  obj_1, obj_2,
-                                  &path_to_obj_1, &path_to_obj_2);
+                                  obj_1, obj_2, last_el_1);
             continue;
         }
 
-        if (*path_to_obj_1 != EMPTY)
+        if (stk_1_path->size != 0)
             PrintDiffDescription(&node_1,
-                                 obj_1, obj_2,
-                                 &path_to_obj_1);
+                                 obj_1, obj_2, last_el_1);
 
-        if (*path_to_obj_2 != EMPTY)
+        if (stk_2_path->size != 0)
             PrintDiffDescription(&node_2,
-                                 obj_2, obj_1,
-                                 &path_to_obj_2);
+                                 obj_2, obj_1, last_el_2);
     }
 
     return success;
 }
 
 enum Status PrintEqualDescription(struct Node** node_1, struct Node** node_2,
-                                  char* obj_1, char* obj_2,
-                                  Ans** path_to_obj_1, Ans** path_to_obj_2)
+                                  char* obj_1, char* obj_2, StackValueType last_el)
 {
     assert(node_1);
     assert(node_2);
     assert(obj_1);
     assert(obj_2);
-    assert(path_to_obj_1);
-    assert(path_to_obj_2);
 
-    if (**path_to_obj_1 == YES)
+    if (last_el == YES)
     {
         printf("%s and %s both: %s\n", obj_1, obj_2, (*node_1)->data);
         *node_1 = GetLeft(*node_1);
         *node_2 = GetLeft(*node_2);
     }
 
-    if (**path_to_obj_1 == NO)
+    if (last_el == NO)
     {
         printf("%s and %s both aren`t: %s\n", obj_1, obj_2, (*node_1)->data);
         *node_1 = GetRight(*node_1);
         *node_2 = GetRight(*node_2);
     }
 
-    (*path_to_obj_1)++;
-    (*path_to_obj_2)++;
-
     return success;
 }
 
 enum Status PrintDiffDescription(struct Node** node,
-                                 char* obj_1, char* obj_2,
-                                 Ans** path_to_obj)
+                                 char* obj_1, char* obj_2, StackValueType last_el)
 {
     assert(node);
     assert(obj_1);
     assert(obj_2);
-    assert(path_to_obj);
 
-    if (**path_to_obj == YES)
+    if (last_el == YES)
     {
         printf("%s is %s, but %s isn`t\n", obj_1, (*node)->data, obj_2);
         *node = GetLeft(*node);
     }
 
-    if (**path_to_obj == NO)
+    if (last_el == NO)
     {
         *node = GetRight(*node);
     }
 
-    (*path_to_obj)++;
-
     return success;
-
 }
 
 enum Mode GetMode(void)
@@ -349,33 +346,36 @@ enum Ans GetAnswer(void)
     }
 }
 
-enum Status GetDescription(struct Node* node, char* name, Ans* path)
+enum Status GetDescription(struct Node* node, char* name, struct Stack* path)
 {
     assert(node);
     assert(name);
     assert(path);
 
+
     if (strcmp(node->data, name) == 0)
         return success;
 
     if (    GetLeft(node) != NULL
-        && (GetDescription(GetLeft(node), name, path + 1) == success))
+        && (GetDescription(GetLeft(node), name, path) == success))
     {
-        *path = YES;
+        StackPush(path, YES);
+        StackDump(path);
         return success;
     }
 
     if (    GetRight(node) != NULL
-        && (GetDescription(GetRight(node), name, path + 1) == success))
+        && (GetDescription(GetRight(node), name, path) == success))
     {
-        *path = NO;
+        StackPush(path, NO);
+        StackDump(path);
         return success;
     }
 
     return error;
 }
 
-enum Status PrintDescription(struct Node* node, char* name, Ans* path)
+enum Status PrintDescription(struct Node* node, char* name, struct Stack* path)
 {
     assert(node);
     assert(name);
@@ -383,21 +383,24 @@ enum Status PrintDescription(struct Node* node, char* name, Ans* path)
 
     printf("Description of %s here: ", name);
 
-    while (*path != EMPTY)
+    StackValueType last_el = EMPTY;
+
+    while (path->size > 1)
     {
-        if (*path == YES)
+        StackDump(path);
+        StackPop(path, &last_el);
+
+        if (last_el == YES)
         {
             printf("it is %s and ", node->data);
             node = GetLeft(node);
         }
 
-        else
+        if (last_el == NO)
         {
             printf("it is not %s and ", node->data);
             node = GetRight(node);
         }
-
-        path++;
     }
 
     printf("this is all about %s", name);
