@@ -56,10 +56,3 @@ void SetRoot(struct Tree* tree, struct Node* new_root)
     tree->root = new_root;
 }
 
-void SetSize(struct Tree* tree, int new_size)
-{
-    assert(tree);
-
-    tree->size = new_size;
-}
-

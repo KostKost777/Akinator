@@ -19,7 +19,5 @@ void SetRight(struct Node* node, struct Node* new_right);
 
 void SetRoot(struct Tree* tree, struct Node* new_root);
 
-void SetSize(struct Tree* tree, int new_size);
-
 #endif
 

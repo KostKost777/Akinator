@@ -46,41 +46,74 @@ enum Status GetDataBaseFromFile(struct Buffer* buffer,
     return success;
 }
 
-struct Node* FillNodeDataFromBuffer(char* cur_pos, struct Node* node)
+struct Node* FillNodeDataFromBuffer(char** cur_pos,
+                                    struct Node** node, int* size)
 {
     assert(cur_pos);
 
-    const int NILL_LEN = 3;
-    char* node_ptr = GetPrettyPtr(node);
+    const int NIL_LEN = 3;
+    char* node_ptr = NULL;
 
-    fprintf(log_file, "=========Функция создания узла===========\n\n");
+    fprintf(log_file, "=========Новый вызов функции создания узла===========\n\n");
 
-    fprintf(log_file, "BUFFER: %s\n", cur_pos);
-    fprintf(log_file, "NODE_PTR: %p\n", node);
+    fprintf(log_file, "BUFFER: %s\n\n", *cur_pos);
+    fprintf(log_file, "SIZE: %d \n\n", *size);
+    fprintf(log_file, "NODE_PTR: %p\n\n", *node);
 
-    if (*cur_pos == '(')
+    if (**cur_pos == '(')
     {
-        fprintf(log_file, "Обнаружил скобку \"(\"\n\n", cur_pos);
-        cur_pos++;
-        fprintf(log_file, "Пропустил скобку %s\n\n", cur_pos);
+        fprintf(log_file, "Обнаружил скобку \"(\"\n\n");
+        (*cur_pos)++;
+        fprintf(log_file, "Пропустил скобку %s\n\n", *cur_pos);
 
-        char* name = RaedName(cur_pos);
+        //fprintf(log_file, "Прочитал имя новой вершины: %s \n\n", name);
 
-        fprintf(log_file, "Прочитал имя новой вершины: %s \n\n", name);
+        *node = NodeCtor(RaedName(*cur_pos), *node);
 
-        node = NodeCtor(name, node);
+        node_ptr = GetPrettyPtr(*node);
 
-        cur_pos += strlen(name) + 2;
+        fprintf(log_file, "Создал новую вершину PTR: %s NAME: %s \n\n",
+                                                        node_ptr, (*node)->data);
+        free(node_ptr);
 
-        node->left = FillNodeDataFromBuffer(cur_pos, node->left);
-        node->right = FillNodeDataFromBuffer(cur_pos, node->right);
+        *size += 1;
 
-        cur_pos++;
+        fprintf(log_file, "Уеличил размер SIZE: %d \n\n", *size);
+
+        *cur_pos += strlen((*node)->data) + 2;
+
+        fprintf(log_file, "Пропустил слово: %s \n\n", *cur_pos);
+
+        (*node)->left = FillNodeDataFromBuffer(cur_pos, &((*node)->left), size);
+
+        node_ptr = GetPrettyPtr((*node)->left);
+        fprintf(log_file, "Завершил левый узел: %s У этого узла: %p имя главного: %s\n\n",
+                                                                node_ptr, (*node), (*node)->data);
+        free(node_ptr);
+
+        (*node)->right = FillNodeDataFromBuffer(cur_pos, &((*node)->right), size);
+
+        node_ptr = GetPrettyPtr((*node)->right);
+        fprintf(log_file, "Завершил правый узел: %s У этого узла: %p имя главного: %s\n\n",
+                                                                node_ptr, (*node), (*node)->data);
+        free(node_ptr);
+
+        (*cur_pos)++;
+
+        fprintf(log_file, "Пропустил \")\": %s\n\n", *cur_pos);
+
+        node_ptr = GetPrettyPtr(*node);
+        fprintf(log_file, "Сейчас верну этот указатель %s: \n\n", node_ptr);
+        free(node_ptr);
+
+        return (*node);
     }
 
-    if (IsNil(cur_pos))
+    else if (IsNil(*cur_pos))
     {
-        cur_pos += NILL_LEN;
+        *cur_pos += NIL_LEN;
+
+        fprintf(log_file, "Пропустил \"nil\": %s\n\n", *cur_pos);
 
         return NULL;
     }
@@ -94,10 +127,15 @@ char* RaedName(char* cur_pos)
 
     cur_pos++;
 
+    fprintf(log_file, "Пропустил \" : %s\n\n", cur_pos);
+
     int len = strchr(cur_pos, '"') - cur_pos;
-    printf("LEN: %d\n", len);
+
+    fprintf(log_file, "Посчитал длину нового имени LEN: %d\n\n", len);
 
     *(cur_pos + len) = '\0';
+
+    fprintf(log_file, "Тут же получил имя NAME: %s\n\n", cur_pos);
 
     return cur_pos;
 }
@@ -108,7 +146,9 @@ bool IsNil(char* cur_pos)
 
     sscanf(cur_pos, "%3s", checker);
 
-    if (!strcmp(checker, "nil"))
+    fprintf(log_file, "Прочитал потенциальный NIL получил: %s\n\n", checker);
+
+    if (strcmp(checker, "nil") == 0)
         return true;
 
     return false;

@@ -17,9 +17,6 @@ enum Status TreeCtor(struct Tree* tree)
 
     tree->size = 1;
 
-    tree->root->data = strdup("Nuchto");
-    tree->root->parent = tree->root;
-
     return success;
 }
 

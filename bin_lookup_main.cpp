@@ -20,7 +20,12 @@ int main() {
 
     TreeCtor(&tree);
 
-    //FillNodeDataFromBuffer(buffer.data, tree.root);
+    TreeDump(&tree);
+
+    tree.size = 0;
+    FillNodeDataFromBuffer(&buffer.data, &tree.root, &tree.size);
+
+    printf("ROOT: %p", tree.root);
 
     TreeDump(&tree);
 

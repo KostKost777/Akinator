@@ -12,8 +12,8 @@ int GetSizeOfFile(const char* filename);
 enum Status GetDataBaseFromFile(struct Buffer* buffer,
                                 const char* input_filename);
 
-
-struct Node* FillNodeDataFromBuffer(char* cur_pos, struct Node* node);
+struct Node* FillNodeDataFromBuffer(char** cur_pos,
+                                    struct Node** node, int* size);
 
 bool IsNil(char* cur_pos);
 
