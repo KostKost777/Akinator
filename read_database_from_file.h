@@ -7,13 +7,14 @@ struct Buffer
     int size;
 };
 
+void SkipSpaces(char** cur_pos);
+
 int GetSizeOfFile(const char* filename);
 
 enum Status GetDataBaseFromFile(struct Buffer* buffer,
                                 const char* input_filename);
 
-struct Node* FillNodeDataFromBuffer(char** cur_pos,
-                                    struct Node** node, int* size);
+struct Node* FillNodeDataFromBuffer(char** cur_pos, int* size, struct Node* parent);
 
 bool IsNil(char* cur_pos);
 

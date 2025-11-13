@@ -65,13 +65,17 @@ enum Status PrintDescription(struct Node* node, char* name, Ans* path);
 
 enum Status Guess(struct Tree* tree);
 
-void TreeDtor(struct Tree* tree);
+void TreeDtor(struct Tree* tree, struct Buffer* buffer);
 
-void DeleteNode(struct Tree* tree, struct Node* node);
+void BufferDtor(struct Buffer* buffer);
+
+void DeleteNode(struct Tree* tree, struct Node* node, struct Buffer* buffer);
 
 enum Status Comparation(struct Tree* tree);
 
 enum Status FillComparationArray(struct Node* node, char* name, Ans* comp_arr);
+
+enum Status WriteDataBaseInFile(struct Tree* tree, const char* database_file_name);
 
 enum Status PrintComparison (struct Node* node1, struct Node* node2,
                              char* object_1, char* object_2,
@@ -87,8 +91,12 @@ enum Status PrintEqualDescription(struct Node** node_1, struct Node** node_2,
 
 enum Mode GetMode(void);
 
+void Speak(const char* text);
+
 void CloseLogFile();
 
 void OpenLogFile(const char* log_file_name);
+
+bool IsDinamicMemory(void* ptr, void* buffer_ptr, int size);
 
 #endif

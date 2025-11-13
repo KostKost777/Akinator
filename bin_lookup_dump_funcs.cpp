@@ -4,11 +4,95 @@
 #include "bin_lookup_dump_funcs.h"
 #include "bin_lookup_get_set_funcs.h"
 
+
+int TreeVerifier(struct Tree* tree)
+{
+    assert(tree);
+
+    if (tree->size < 0)
+        tree->code_err |= BAD_SIZE;
+
+    if (GetRoot(tree) == NULL)
+        tree->code_err |= BAD_ROOT;
+
+    if (CheckParents(tree->root) == error)
+        tree->code_err |= BAD_PARENT;
+
+    if (CheckDataPtr(tree->root) == error)
+        tree->code_err |= BAD_DATA;
+
+    return tree->code_err;
+}
+
+enum Status CheckParents(struct Node* node)
+{
+    if (node->left != NULL)
+    {
+        if (node->left->parent != node)
+            return error;
+
+        else
+            return CheckParents(node->left);
+    }
+
+    if (node->right != NULL)
+    {
+        if (node->right->parent != node)
+            return error;
+
+        else
+            return CheckParents(node->right);
+    }
+
+    return success;
+}
+
+enum Status CheckDataPtr(struct Node* node)
+{
+    if (node->left != NULL)
+    {
+        if (node->left->data == NULL)
+            return error;
+
+        else
+            return CheckDataPtr(node->left);
+    }
+
+    if (node->right != NULL)
+    {
+        if (node->right->data == NULL)
+            return error;
+
+        else
+            return CheckDataPtr(node->right);
+    }
+
+    return success;
+}
+
+void PrintNameOfErrors(int code_err)
+{
+    if (code_err & BAD_SIZE)
+        fprintf(log_file, "<h3 style=\"color: red;\">BAD_SIZE - [%d]</h3>\n",
+                                                                    BAD_SIZE);
+
+    if (code_err & BAD_ROOT)
+        fprintf(log_file, "<h3 style=\"color: red;\">BAD_SIZE - [%d]</h3>\n",
+                                                                   BAD_ROOT);
+
+    if (code_err & BAD_PARENT)
+        fprintf(log_file, "<h3 style=\"color: red;\">BAD_SIZE - [%d]</h3>\n",
+                                                                 BAD_PARENT);
+};
+
 void TreeDump(struct Tree* tree)
 {
     assert(tree);
 
     //fprintf(log_file, "<h3>TREE { %s %s:%d }</h3>", func, file, line);
+
+    if (tree->code_err != 0)
+        PrintNameOfErrors(tree->code_err);
 
     fprintf(log_file, "<h3>SIZE: %d\n</h3>", GetSize(tree));
 

@@ -3,6 +3,7 @@
 #include "bin_lookup_funcs.h"
 #include "bin_lookup_dump_funcs.h"
 #include "bin_lookup_get_set_funcs.h"
+#include "read_database_from_file.h"
 
 FILE* log_file = NULL;
 
@@ -10,12 +11,8 @@ enum Status TreeCtor(struct Tree* tree)
 {
     assert(tree);
 
-    tree->root = (Node*)calloc(1, sizeof(Node));
-
-    if (tree->root == NULL)
-        return error;
-
     tree->size = 1;
+    //tree->root->data = strdup("Nothing");
 
     return success;
 }
@@ -36,7 +33,7 @@ void PrintAkinatorOptions(void)
 {
     printf("\n\n\n------------This is Akinator------------\n\n"
            "            Choose options:\n\n"
-           "            Guessing    - [g]\n"
+           "            Guess       - [g]\n"
            "            Description - [d]\n"
            "            Comparation - [c]\n"
            "            Exit        - [e]\n\n\n");
@@ -206,7 +203,7 @@ enum Status PrintComparison (struct Node* node_1, struct Node* node_2,
 
     while(*path_to_obj_1 != EMPTY || *path_to_obj_2 != EMPTY)
     {
-        if (*path_to_obj_1 == *path_to_obj_2)
+        if (*path_to_obj_1 == *path_to_obj_2 && node_1 == node_2)
         {
             PrintEqualDescription(&node_1, &node_2,
                                   obj_1, obj_2,
@@ -238,8 +235,6 @@ enum Status PrintEqualDescription(struct Node** node_1, struct Node** node_2,
     assert(obj_2);
     assert(path_to_obj_1);
     assert(path_to_obj_2);
-
-
 
     if (**path_to_obj_1 == YES)
     {
@@ -445,21 +440,20 @@ void UpdateDataBase(struct Node* node, FILE* database_file)
     assert(node);
     assert(database_file);
 
-    fprintf(database_file,"(");
-    fprintf(database_file, "\"%s\"", node->data);
+    fprintf(database_file,"( ");
+    fprintf(database_file, "\"%s\" ", node->data);
 
     if (GetLeft(node) != NULL)
         UpdateDataBase(GetLeft(node), database_file);
     else
-        fprintf(database_file, "nil");
+        fprintf(database_file, "nil ");
 
     if (GetRight(node) != NULL)
         UpdateDataBase(GetRight(node), database_file);
     else
-        fprintf(database_file, "nil");
+        fprintf(database_file, "nil ");
 
-    fprintf(database_file, ")");
-
+    fprintf(database_file, ") ");
 }
 
 void CloseLogFile()
@@ -481,35 +475,71 @@ void OpenLogFile(const char* log_file_name)
     fprintf(log_file, "<pre>\n");
 }
 
-void DeleteNode(struct Tree* tree, struct Node* node)
+void DeleteNode(struct Tree* tree, struct Node* node, struct Buffer* buffer)
 {
     assert(node);
     assert(tree);
 
-    if (node->left != NULL) {
-        DeleteNode(tree, node->left);
-    }
+    if (node->left != NULL)
+        DeleteNode(tree, node->left, buffer);
 
     if (node->left != NULL)
         tree->size--;
 
+    if (   node->left != NULL
+        && IsDinamicMemory(node->left->data, buffer->data, buffer->size))
+    {
+
+        fprintf(log_file, "<strong>Этот объект удалится как динамический </strong>|%s|\n",
+                                                    node->left->data);
+
+        free(node->left->data);
+        node->left->data = NULL;
+    }
+
     free(node->left);
     node->left = NULL;
 
-    if (node->right != NULL) {
-        DeleteNode(tree, node->right);
-    }
+    if (node->right != NULL)
+        DeleteNode(tree, node->right, buffer);
 
     if (node->right != NULL)
         tree->size--;
+
+    if (   node->right != NULL
+        && IsDinamicMemory(node->right->data, buffer->data, buffer->size))
+    {
+        fprintf(log_file, "<strong>Этот объект удалится как динамический </strong>|%s|\n",
+                                                    node->right->data);
+        free(node->right->data);
+        node->right->data = NULL;
+    }
 
     free(node->right);
     node->right = NULL;
 }
 
-void TreeDtor(struct Tree* tree)
+enum Status WriteDataBaseInFile(struct Tree* tree, const char* database_file_name)
 {
-    DeleteNode(tree, tree->root);
+    assert(database_file_name);
+
+    FILE* database_file = fopen("database.txt", "w");
+
+    if (database_file == NULL)
+    {
+        fprintf(log_file, "<h2>Error open |%s| file</h2>\n", database_file_name);
+        return error;
+    }
+
+    UpdateDataBase(GetRoot(tree), database_file);
+    fclose(database_file);
+
+    return success;
+}
+
+void TreeDtor(struct Tree* tree, struct Buffer* buffer)
+{
+    DeleteNode(tree, tree->root, buffer);
 
     free(tree->root);
     tree->root = NULL;
@@ -571,5 +601,45 @@ ssize_t getline(char** dest, size_t* n, FILE* file)
     (*dest)[counter] = '\0';
 
     return counter;
+}
+
+void BufferDtor(struct Buffer* buffer)
+{
+    assert(buffer);
+
+    free(buffer->data);
+    buffer->data = NULL;
+
+    buffer->size = 0;
+}
+
+bool IsDinamicMemory(void* ptr, void* buffer_ptr, int size)
+{
+    assert(ptr);
+    assert(buffer_ptr);
+
+    if ((long)ptr >= (long)buffer_ptr && (long)ptr <= (long)(buffer_ptr + size))
+        return false;
+
+    return true;
+}
+
+void Speak(const char* text)
+{
+    assert(text);
+
+    const int COMMAND_SIZE = 100;
+    char command[COMMAND_SIZE] = {};
+
+    snprintf(command, COMMAND_SIZE,
+
+        "PowerShell -Command \""
+        "Add-Type -AssemblyName System.Speech; "
+        "$speech = New-Object System.Speech.Synthesis.SpeechSynthesizer; "
+        "$speech.Speak('%s');\"",
+
+        text);
+
+    system(command);
 }
 

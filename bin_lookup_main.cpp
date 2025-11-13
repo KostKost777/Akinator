@@ -10,6 +10,8 @@ int main() {
     atexit(CloseLogFile);
     OpenLogFile("bin_lookup_log_file.html");
 
+    //speak("Здарова я жива нахуй, а ну быстро ебашь озвучку а то дед на кукан насадит");
+
     struct Buffer buffer = {};
 
     GetDataBaseFromFile(&buffer, "database.txt");
@@ -20,12 +22,11 @@ int main() {
 
     TreeCtor(&tree);
 
-    TreeDump(&tree);
+    char* cur_pos = buffer.data;
+    tree.root = FillNodeDataFromBuffer(&cur_pos, &tree.size, tree.root);
 
-    tree.size = 0;
-    FillNodeDataFromBuffer(&buffer.data, &tree.root, &tree.size);
-
-    printf("ROOT: %p", tree.root);
+    printf("BUFF: %s\n", buffer.data);
+    printf("CUR_POS: %s\n", cur_pos);
 
     TreeDump(&tree);
 
@@ -33,11 +34,10 @@ int main() {
 
     TreeDump(&tree);
 
-    FILE* database_file = fopen("database.txt", "w");
-    UpdateDataBase(GetRoot(&tree), database_file);
-    fclose(database_file);
+    WriteDataBaseInFile(&tree, "database.txt");
 
-    TreeDtor(&tree);
+    TreeDtor(&tree, &buffer);
+    BufferDtor(&buffer);
 
     return 0;
 }
