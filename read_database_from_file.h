@@ -9,6 +9,8 @@ struct Buffer
 
 void SkipSpaces(char** cur_pos);
 
+void ConvertUnicodes(unsigned char* source, unsigned char* dest);
+
 int GetSizeOfFile(const char* filename);
 
 enum Status GetDataBaseFromFile(struct Buffer* buffer,
