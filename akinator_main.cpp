@@ -1,3 +1,4 @@
+#define TX_USE_SPEAK
 #include<TXLib.h>
 
 #include "akinator_funcs.h"
@@ -5,20 +6,33 @@
 #include "akinator_get_set_funcs.h"
 #include "read_database_from_file.h"
 
-int main() {
-
+int main(int argc, char* argv[])
+{
     atexit(CloseLogFile);
-    OpenLogFile("akinator_log_file.html");
+
+//     FILE* test = fopen("test.txt", "w");
+//
+//     char word[50] = "Привет как дела";
+//     fprintf(test, "%s", ConvertEncoding(word));
+//
+//     fclose(test);
+
+    //txSpeak("Привет как твои дела");
 
     const char* database_file_name = "database.txt";
 
-    struct Buffer buffer = {};
+    if (argc > 1)
+        database_file_name = argv[1];
+
+    OpenLogFile("akinator_log_file.html");
+
+    Buffer buffer = {};
 
     GetDataBaseFromFile(&buffer, database_file_name);
 
     //printf("BUFFER: %s\n SIZE: %d\n", buffer.data, buffer.size);
 
-    struct Tree tree = {};
+    Tree tree = {};
 
     TreeCtor(&tree);
 

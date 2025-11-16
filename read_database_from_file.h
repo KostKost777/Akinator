@@ -1,6 +1,8 @@
 #ifndef READ_DATABASE_FUNCS
 #define READ_DATABASE_FUNCS
 
+#include "akinator_funcs.h"
+
 struct Buffer
 {
     char* data;
@@ -9,14 +11,14 @@ struct Buffer
 
 void SkipSpaces(char** cur_pos);
 
-void ConvertUnicodes(unsigned char* source, unsigned char* dest);
+void BufferDtor( Buffer* buffer);
 
 int GetSizeOfFile(const char* filename);
 
-enum Status GetDataBaseFromFile(struct Buffer* buffer,
+Status GetDataBaseFromFile(Buffer* buffer,
                                 const char* input_filename);
 
-struct Node* FillNodeDataFromBuffer(char** cur_pos, int* size, struct Node* parent);
+Node* FillNodeDataFromBuffer(char** cur_pos, int* size, Node* parent);
 
 bool IsNil(char* cur_pos);
 

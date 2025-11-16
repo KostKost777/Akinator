@@ -29,67 +29,65 @@ enum Status
 struct Node
 {
     char* data;
-    struct Node* parent;
-    struct Node* left;
-    struct Node* right;
+     Node* parent;
+     Node* left;
+     Node* right;
 };
 
 struct Tree
 {
     int size;
     int code_err;
-    struct Node* root;
+     Node* root;
 };
+
+#include "read_database_from_file.h"
 
 extern FILE* log_file;
 
-enum Status TreeCtor(struct Tree* tree);
+Status TreeCtor( Tree* tree);
 
-enum Ans GetAnswer(void);
+Ans GetAnswer(void);
 
-void NodeDtor(struct Node* node);
+ssize_t my_getline(char** dest, size_t* n, FILE* file);
 
-struct Node* NodeCtor(char* value, struct Node* parent);
+Node* NodeCtor(char* value,  Node* parent);
 
 void PrintAkinatorOptions(void);
 
-enum Status StartAkinator(struct Tree* tree);
+Status StartAkinator( Tree* tree);
 
-enum Status CreateNewNode(struct Tree* tree, struct Node* node);
+Status CreateNewNode( Tree* tree,  Node* node);
 
-void UpdateDataBase(struct Node* node, FILE* database_file);
+void UpdateDataBase( Node* node, FILE* database_file);
 
-enum Status GetDescription(struct Node* node, char* name, struct Stack* path);
+Status GetDescription( Node* node, char* name,  Stack* path);
 
-enum Status FindDescription(struct Tree* tree);
+Status FindDescription( Tree* tree);
 
-enum Status PrintDescription(struct Node* node, char* name, struct Stack* path);
+Status PrintDescription( Node* node, char* name,  Stack* path);
 
-enum Status Guess(struct Tree* tree);
+Status Guess( Tree* tree);
 
-void TreeDtor(struct Tree* tree, struct Buffer* buffer);
+void TreeDtor( Tree* tree,  Buffer* buffer);
 
-void BufferDtor(struct Buffer* buffer);
+void DeleteNode( Tree* tree,  Node* node,  Buffer* buffer);
 
-void DeleteNode(struct Tree* tree, struct Node* node, struct Buffer* buffer);
+Status Comparation( Tree* tree);
 
-enum Status Comparation(struct Tree* tree);
+Status WriteDataBaseInFile( Tree* tree, const char* database_file_name);
 
-enum Status WriteDataBaseInFile(struct Tree* tree, const char* database_file_name);
-
-enum Status PrintComparison (struct Node* node_1, struct Node* node_2,
+Status PrintComparison ( Node* node_1,  Node* node_2,
                              char* obj_1, char* obj_2,
-                             struct Stack* stk_1_path, struct Stack* stk_2_path);
+                              Stack* stk_1_path,  Stack* stk_2_path);
 
-enum Status PrintDiffDescription(struct Node** node,
+Status PrintDiffDescription( Node** node,
                                  char* obj_1, char* obj_2, StackValueType last_el);
 
-enum Status PrintEqualDescription(struct Node** node_1, struct Node** node_2,
+Status PrintEqualDescription( Node** node_1,  Node** node_2,
                                   char* obj_1, char* obj_2, StackValueType last_el);
 
-enum Mode GetMode(void);
-
-void PrintAndSpeak(const char* message, ...);
+Mode GetMode(void);
 
 void CloseLogFile();
 

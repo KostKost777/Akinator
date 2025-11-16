@@ -9,33 +9,35 @@ enum ErrCodes
     BAD_DATA = 8
 };
 
-void PrintTree(struct Node* node, FILE* graphiz_file);
+void PrintTree( Node* node, FILE* graphiz_file);
 
-void TreeDump(struct Tree* tree);
+void TreeDump( Tree* tree);
 
-void PrintGraphizNode(FILE* graphiz_file, struct Node* node);
+void PrintGraphizNode(FILE* graphiz_file,  Node* node);
 
-void PrintGraphizEdge(FILE* graphiz_file, struct Node* node);
+void PrintGraphizEdge(FILE* graphiz_file,  Node* node);
 
-void PrintBazeNode(FILE* graphiz_file, struct Tree* tree);
+void PrintBazeNode(FILE* graphiz_file,  Tree* tree);
 
-void PrintBazeEdge(FILE* graphiz_file, struct Tree* tree);
+void PrintBazeEdge(FILE* graphiz_file,  Tree* tree);
 
-int TreeVerifier(struct Tree* tree);
+int TreeVerifier( Tree* tree);
 
-enum Status CheckParents(struct Node* node);
+ Status CheckParents( Node* node);
 
-enum Status CheckDataPtr(struct Node* node);
+ Status CheckDataPtr( Node* node);
 
 char* GetPrettyPtr(void* ptr);
 
 void PrintNameOfErrors(int code_err);
 
-void FillLogFile(char* image_file_name, struct Tree* tree, int file_counter);
+void FillLogFile(char* image_file_name,  Tree* tree, int file_counter);
 
 static char* GetNewDotCmd(int file_counter);
 
 static char* GetNewImageFileName(int file_counter);
+
+char* ConvertEncoding(char* win1251);
 
 #endif
 

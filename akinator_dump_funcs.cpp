@@ -4,8 +4,7 @@
 #include "akinator_dump_funcs.h"
 #include "akinator_get_set_funcs.h"
 
-
-int TreeVerifier(struct Tree* tree)
+int TreeVerifier( Tree* tree)
 {
     assert(tree);
 
@@ -24,7 +23,7 @@ int TreeVerifier(struct Tree* tree)
     return tree->code_err;
 }
 
-enum Status CheckParents(struct Node* node)
+ Status CheckParents( Node* node)
 {
     if (node->left != NULL)
     {
@@ -47,7 +46,7 @@ enum Status CheckParents(struct Node* node)
     return success;
 }
 
-enum Status CheckDataPtr(struct Node* node)
+ Status CheckDataPtr( Node* node)
 {
     if (node->left != NULL)
     {
@@ -85,7 +84,7 @@ void PrintNameOfErrors(int code_err)
                                                                  BAD_PARENT);
 };
 
-void TreeDump(struct Tree* tree)
+void TreeDump( Tree* tree)
 {
     assert(tree);
 
@@ -116,7 +115,7 @@ void TreeDump(struct Tree* tree)
     fprintf(graphiz_file, "}");
 
     fclose(graphiz_file);
-    free(image_file_name);
+
 
     char* command = GetNewDotCmd(file_counter);
 
@@ -125,12 +124,11 @@ void TreeDump(struct Tree* tree)
 
     FillLogFile(image_file_name, tree, file_counter);
 
+    free(image_file_name);
     file_counter++;
-
-
 }
 
-void PrintBazeNode(FILE* graphiz_file, struct Tree* tree)
+void PrintBazeNode(FILE* graphiz_file,  Tree* tree)
 {
     assert(tree);
     assert(graphiz_file);
@@ -146,7 +144,7 @@ void PrintBazeNode(FILE* graphiz_file, struct Tree* tree)
 
 }
 
-void PrintBazeEdge(FILE* graphiz_file, struct Tree* tree)
+void PrintBazeEdge(FILE* graphiz_file,  Tree* tree)
 {
     assert(tree);
     assert(graphiz_file);
@@ -155,7 +153,7 @@ void PrintBazeEdge(FILE* graphiz_file, struct Tree* tree)
                                                                  GetRoot(tree));
 }
 
-void PrintTree(struct Node* node, FILE* graphiz_file)
+void PrintTree( Node* node, FILE* graphiz_file)
 {
     assert(node);
     assert(graphiz_file);
@@ -179,27 +177,19 @@ void PrintTree(struct Node* node, FILE* graphiz_file)
 
 }
 
-void PrintGraphizEdge(FILE* graphiz_file, struct Node* node)
+void PrintGraphizEdge(FILE* graphiz_file,  Node* node)
 {
     assert(node);
     assert(graphiz_file);
 
     if (GetLeft(node) != NULL && GetRight(node) != NULL)
-        fprintf(graphiz_file, "node%p -> { node%p node%p } [dir = both]\n",
-                                                               node,
-                                                               GetLeft(node),
-                                                               GetRight(node));
-
-    else if (GetLeft(node) != NULL && GetRight(node) == NULL)
-        fprintf(graphiz_file, "node%p -> { node%p } [dir = both]\n", node,
-                                                                     GetLeft(node));
-
-    else if (GetLeft(node) == NULL && GetRight(node) != NULL)
-        fprintf(graphiz_file, "node%p -> { node%p } [dir = both]\n", node,
-                                                                     GetRight(node));
+    {
+        fprintf(graphiz_file, "node%p -> node%p [dir = both tailport=sw]\n", node, GetLeft(node));
+        fprintf(graphiz_file, "node%p -> node%p [dir = both tailport=se]\n", node, GetRight(node));
+    }
 }
 
-void PrintGraphizNode(FILE* graphiz_file, struct Node* node)
+void PrintGraphizNode(FILE* graphiz_file,  Node* node)
 {
     assert(node);
     assert(graphiz_file);
@@ -208,19 +198,20 @@ void PrintGraphizNode(FILE* graphiz_file, struct Node* node)
     char* right_ptr = GetPrettyPtr(node->right);
     char* parent_ptr = GetPrettyPtr(node->parent);
     char* node_ptr = GetPrettyPtr(node);
+    char* rus_name = ConvertEncoding(node->data);
 
     fprintf(graphiz_file, "node%p "
                           "[shape = Mrecord, "
                           "style = filled, "
                           "fillcolor = \"#8ABAD3\", "
                           "color = \"#00000\", "
-                          "label = \" {PARANT_PTR: %s| PTR: %s | DATA: %s",
-                          node, parent_ptr, node_ptr, node->data);
+                          "label = \" {PARANT_PTR: %p| PTR: %p | DATA: %s",
+                          node, node->parent, node, rus_name);
 
     if (node->left != NULL && node->right != NULL)
-        fprintf(graphiz_file, " | {YES \\n PTR: %s | NO \\n PTR: %s}} \" ]\n",
-                                                                     left_ptr,
-                                                                     right_ptr);
+        fprintf(graphiz_file, " | {YES \\n PTR: %p | NO \\n PTR: %p}} \" ]\n",
+                                                                     node->left,
+                                                                     node->right);
 
     else
         fprintf(graphiz_file, "} \" ]\n");
@@ -229,6 +220,7 @@ void PrintGraphizNode(FILE* graphiz_file, struct Node* node)
     free(right_ptr);
     free(parent_ptr);
     free(node_ptr);
+    free(rus_name);
 }
 
 char* GetPrettyPtr(void* ptr)
@@ -259,13 +251,13 @@ char* GetPrettyPtr(void* ptr)
     return pretty_ptr;
 }
 
-void FillLogFile(char* image_file_name, struct Tree* tree, int file_counter)
+void FillLogFile(char* image_file_name,  Tree* tree, int file_counter)
 {
     assert(image_file_name != NULL);
     assert(tree != NULL);
 
     fprintf(log_file, "\n\n<img src=image%d.png width=%dpx>\n\n",
-                                                    file_counter, 500);
+                                                    file_counter, 2000);
 
     fprintf(log_file, "--------------------------------------------------------------------------------------------------------------------------------------------\n\n");
 
@@ -291,5 +283,68 @@ static char* GetNewImageFileName(int file_counter)
              "image%d.txt", file_counter);
 
     return strdup(str_file_counter);
+}
+
+char* ConvertEncoding(char* win1251)
+{
+    assert(win1251);
+
+    size_t win1251_size = strlen(win1251);
+    size_t utf8_size = 0;
+
+    //printf("SIZE: %d  STR: %s\n", win1251_size, win1251);
+
+    for (size_t i = 0; i < win1251_size; i++)
+    {
+        unsigned char sym = win1251[i];
+
+        if (sym < 128)
+            utf8_size++;
+
+        else if (sym >= 192 || sym == 168 || sym == 184)
+            utf8_size += 2;
+    }
+
+    char* utf8 = (char*)calloc(utf8_size + 1, sizeof(char));
+
+    assert(utf8);
+
+    size_t utf8_i = 0;
+
+    for (size_t win1251_i = 0; win1251_i < win1251_size; win1251_i++)
+    {
+        unsigned char sym = win1251[win1251_i];
+
+        if (sym < 128)
+            utf8[utf8_i++] = sym;
+
+        if (sym >= 192 && sym <= 239)
+        {
+            utf8[utf8_i++] = (char)208;
+            utf8[utf8_i++] = (char)(sym - 48);
+        }
+
+        else if (sym >= 240)
+        {
+            utf8[utf8_i++] = (char)209;
+            utf8[utf8_i++] = (char)(sym - 112);
+        }
+
+        else if (sym == 168)
+        {
+            utf8[utf8_i++] = (char)208;
+            utf8[utf8_i++] = (char)129;
+        }
+
+        else if (sym == 184)
+        {
+            utf8[utf8_i++] = (char)209;
+            utf8[utf8_i++] = (char)145;
+        }
+    }
+
+    utf8[utf8_i] = '\0';
+
+    return utf8;
 }
 

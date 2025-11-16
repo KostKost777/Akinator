@@ -3,21 +3,21 @@
 
 //GET
 
-struct Node* GetLeft(struct Node* node);
+Node* GetLeft(Node* node);
 
-struct Node* GetRight(struct Node* node);
+Node* GetRight(Node* node);
 
-int GetSize(struct Tree* tree);
+int GetSize(Tree* tree);
 
-struct Node* GetRoot(struct Tree* tree);
+Node* GetRoot(Tree* tree);
 
 //SET
 
-void SetLeft(struct Node* node, struct Node* new_left);
+void SetLeft(Node* node, Node* new_left);
 
-void SetRight(struct Node* node, struct Node* new_right);
+void SetRight(Node* node, Node* new_right);
 
-void SetRoot(struct Tree* tree, struct Node* new_root);
+void SetRoot(Tree* tree, Node* new_root);
 
 #endif
 

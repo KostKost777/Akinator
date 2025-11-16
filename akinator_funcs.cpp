@@ -1,25 +1,24 @@
 #include<TXLib.h>
 
 #include "akinator_funcs.h"
+#include "read_database_from_file.h"
 #include "akinator_dump_funcs.h"
 #include "akinator_get_set_funcs.h"
-#include "read_database_from_file.h"
 #include "STACK\stack_functions.h"
 #include "STACK\dump_functions.h"
 
 FILE* log_file = NULL;
 
-enum Status TreeCtor(struct Tree* tree)
+ Status TreeCtor(Tree* tree)
 {
     assert(tree);
 
     tree->size = 1;
-    //tree->root->data = strdup("Nothing");
 
     return success;
 }
 
-struct Node* NodeCtor(char* value, struct Node* parent)
+Node* NodeCtor(char* value, Node* parent)
 {
     Node* new_node = (Node*)calloc(1, sizeof(Node));
 
@@ -33,29 +32,29 @@ struct Node* NodeCtor(char* value, struct Node* parent)
 
 void PrintAkinatorOptions(void)
 {
-    printf("\n\n\n------------This is Akinator------------\n\n"
-           "            Choose options:\n\n"
-           "            Guess       - [g]\n"
-           "            Description - [d]\n"
-           "            Comparation - [c]\n"
-           "            Exit        - [e]\n\n\n");
+    printf("\n\n\n------------Это Акинатор------------\n\n"
+           "            Выбери опцию:\n\n"
+           "            Угадать   - [у]\n"
+           "            Описание  - [о]\n"
+           "            Сравнение - [с]\n"
+           "            Выход     - [в]\n\n\n");
 }
 
-enum Status StartAkinator(struct Tree* tree)
+ Status StartAkinator(Tree* tree)
 {
     assert(tree);
 
-    printf("Hello, this is the Akinator program."
-                  " I can guess, compare, and tell the "
-                  "definitions of words from my database.");
+    printf( "Привет это Акинатор"
+            " Я умею угадывать, сравнивать"
+            " и описывать предметы из моей базыданных");
 
     while (true)
     {
         PrintAkinatorOptions();
 
-        printf("Enter option: ");
+        printf("Введите опцию: ");
 
-        enum Mode mode = GetMode();
+         Mode mode = GetMode();
 
         switch(mode)
         {
@@ -77,22 +76,22 @@ enum Status StartAkinator(struct Tree* tree)
     return success;
 }
 
-enum Status FindDescription(struct Tree* tree)
+ Status FindDescription(Tree* tree)
 {
     assert(tree);
 
     size_t len = MAX_LEN;
     char* name = NULL;
 
-    printf("Enter object name: ");
-    getline(&name, &len, stdin);
+    printf("Введите имя объекта: ");
+    my_getline(&name, &len, stdin);
 
     INIT_STACK(stk_path);
     StackCtor(&stk_path, 2);
 
     if (GetDescription(GetRoot(tree), name, &stk_path) == error)
     {
-        printf("I do not know who is |%s|\n\n", name);
+        printf("Я не знаю кто такой |%s|\n\n", name);
 
         StackDtor(&stk_path);
 
@@ -106,17 +105,17 @@ enum Status FindDescription(struct Tree* tree)
     return success;
 }
 
-enum Status Guess(struct Tree* tree)
+ Status Guess(Tree* tree)
 {
     assert(tree);
 
     Node* current = GetRoot(tree);
 
-    enum Ans ans = EMPTY;
+     Ans ans = EMPTY;
 
     while(true)
     {
-        printf("This is %s? (y/n): ", current->data);
+        printf("Оно %s? (д/н): ", current->data);
 
         ans = GetAnswer();
 
@@ -139,7 +138,7 @@ enum Status Guess(struct Tree* tree)
 
     switch(ans)
         {
-            case YES: printf("I know, you wish this: %s\n\n", current->data);
+            case YES: printf("Я знаю, ты загадал это: %s\n\n", current->data);
                       return success;
 
             case NO: CreateNewNode(tree, current);
@@ -152,7 +151,7 @@ enum Status Guess(struct Tree* tree)
     return error;
 }
 
-enum Status Comparation(struct Tree* tree)
+ Status Comparation(Tree* tree)
 {
     assert(tree);
 
@@ -160,13 +159,13 @@ enum Status Comparation(struct Tree* tree)
     char* obj_1 = NULL;
     char* obj_2 = NULL;
 
-    printf("\nEnter two objects you want to compare\n");
+    printf("\nВведите два объекта, которые вы хотите сравнить\n");
 
-    printf("\nInput first object name: ");
-    getline(&obj_1, &len, stdin);
+    printf("\nВведите имя первого объекта: ");
+    my_getline(&obj_1, &len, stdin);
 
-    printf("\nInput second object name: ");
-    getline(&obj_2, &len, stdin);
+    printf("\nВведите имя второго объекта: ");
+    my_getline(&obj_2, &len, stdin);
 
     INIT_STACK(stk_1_path);
     StackCtor(&stk_1_path, 2);
@@ -176,14 +175,14 @@ enum Status Comparation(struct Tree* tree)
 
     if(GetDescription(tree->root, obj_1, &stk_1_path))
     {
-        printf("I do not know who is |%s|\n", obj_1);
+        printf("Я не знаю кто такой |%s|\n", obj_1);
         StackDtor(&stk_1_path);
         return error;
     }
 
     if(GetDescription(tree->root, obj_2, &stk_2_path))
     {
-        printf("I do not know who is |%s|\n", obj_2);
+        printf("Я не знаю кто такой |%s|\n", obj_2);
         StackDtor(&stk_2_path);
         return error;
     }
@@ -198,9 +197,9 @@ enum Status Comparation(struct Tree* tree)
     return success;
 }
 
-enum Status PrintComparison (struct Node* node_1, struct Node* node_2,
+ Status PrintComparison (Node* node_1, Node* node_2,
                              char* obj_1, char* obj_2,
-                             struct Stack* stk_1_path, struct Stack* stk_2_path)
+                             Stack* stk_1_path, Stack* stk_2_path)
 {
     assert(node_1);
     assert(node_2);
@@ -237,7 +236,7 @@ enum Status PrintComparison (struct Node* node_1, struct Node* node_2,
     return success;
 }
 
-enum Status PrintEqualDescription(struct Node** node_1, struct Node** node_2,
+ Status PrintEqualDescription(Node** node_1, Node** node_2,
                                   char* obj_1, char* obj_2, StackValueType last_el)
 {
     assert(node_1);
@@ -247,14 +246,14 @@ enum Status PrintEqualDescription(struct Node** node_1, struct Node** node_2,
 
     if (last_el == YES)
     {
-        printf("%s and %s both: %s\n", obj_1, obj_2, (*node_1)->data);
+        printf("%s и %s оба %s\n", obj_1, obj_2, (*node_1)->data);
         *node_1 = GetLeft(*node_1);
         *node_2 = GetLeft(*node_2);
     }
 
     if (last_el == NO)
     {
-        printf("%s and %s both aren`t: %s\n", obj_1, obj_2, (*node_1)->data);
+        printf("%s и %s оба не %s\n", obj_1, obj_2, (*node_1)->data);
         *node_1 = GetRight(*node_1);
         *node_2 = GetRight(*node_2);
     }
@@ -262,7 +261,7 @@ enum Status PrintEqualDescription(struct Node** node_1, struct Node** node_2,
     return success;
 }
 
-enum Status PrintDiffDescription(struct Node** node,
+ Status PrintDiffDescription(Node** node,
                                  char* obj_1, char* obj_2, StackValueType last_el)
 {
     assert(node);
@@ -271,7 +270,7 @@ enum Status PrintDiffDescription(struct Node** node,
 
     if (last_el == YES)
     {
-        printf("%s is %s, but %s isn`t\n", obj_1, (*node)->data, obj_2);
+        printf("%s %s, но %s нет", obj_1, (*node)->data, obj_2);
         *node = GetLeft(*node);
     }
 
@@ -283,23 +282,23 @@ enum Status PrintDiffDescription(struct Node** node,
     return success;
 }
 
-enum Mode GetMode(void)
+ Mode GetMode(void)
 {
     char* ans = NULL;
     size_t len = MAX_LEN;
 
-    getline(&ans, &len, stdin);
+    my_getline(&ans, &len, stdin);
 
     while (true)
     {
-        if (strlen(ans) == 1 && (ans[0] == 'e' || ans[0] == 'd'
-                              || ans[0] == 'g' || ans[0] == 'c'))
+        if (strlen(ans) == 1 && (ans[0] == 'в' || ans[0] == 'о'
+                              || ans[0] == 'у' || ans[0] == 'с'))
             break;
 
         else
         {
-            printf("Incorrect input, try again: ");
-            getline(&ans, &len, stdin);
+            printf("Неверный ввод, попробуйте еще раз: ");
+            my_getline(&ans, &len, stdin);
         }
     }
 
@@ -310,30 +309,30 @@ enum Mode GetMode(void)
 
     switch(mode)
     {
-        case 'e': return EXIT;
-        case 'd': return DESCR;
-        case 'g': return GUESS;
-        case 'c': return COMP;
+        case 'в': return EXIT;
+        case 'о': return DESCR;
+        case 'у': return GUESS;
+        case 'с': return COMP;
         default:  return EXIT;
     }
 }
 
-enum Ans GetAnswer(void)
+ Ans GetAnswer(void)
 {
     char* ans = NULL;
     size_t len = MAX_LEN;
 
-    getline(&ans, &len, stdin);
+    my_getline(&ans, &len, stdin);
 
     while (true)
     {
-        if (strlen(ans) == 1 && (ans[0] == 'y' || ans[0] == 'n'))
+        if (strlen(ans) == 1 && (ans[0] == 'д' || ans[0] == 'н'))
             break;
 
         else
         {
-            printf("Incorrect input, try again: ");
-            getline(&ans, &len, stdin);
+            printf("Неверный ввод, попробйте еще раз: ");
+            my_getline(&ans, &len, stdin);
         }
     }
 
@@ -344,13 +343,13 @@ enum Ans GetAnswer(void)
 
     switch(answer)
     {
-        case 'y': return YES;
-        case 'n': return NO;
+        case 'д': return YES;
+        case 'н': return NO;
         default:  return EMPTY;
     }
 }
 
-enum Status GetDescription(struct Node* node, char* name, struct Stack* path)
+ Status GetDescription(Node* node, char* name, Stack* path)
 {
     assert(node);
     assert(name);
@@ -379,13 +378,13 @@ enum Status GetDescription(struct Node* node, char* name, struct Stack* path)
     return error;
 }
 
-enum Status PrintDescription(struct Node* node, char* name, struct Stack* path)
+ Status PrintDescription(Node* node, char* name, Stack* path)
 {
     assert(node);
     assert(name);
     assert(path);
 
-    printf("Description of %s here: ", name);
+    printf("Описание %s это: ", name);
 
     StackValueType last_el = EMPTY;
 
@@ -396,23 +395,23 @@ enum Status PrintDescription(struct Node* node, char* name, struct Stack* path)
 
         if (last_el == YES)
         {
-            printf("it is %s and ", node->data);
+            printf("%s и ", node->data);
             node = GetLeft(node);
         }
 
         if (last_el == NO)
         {
-            printf("it is not %s and ", node->data);
+            printf("не %s и ", node->data);
             node = GetRight(node);
         }
     }
 
-    printf("this is all about %s\n", name);
+    printf("это все что касается %s\n", name);
 
     return success;
 }
 
-enum Status CreateNewNode(struct Tree* tree, struct Node* node)
+ Status CreateNewNode(Tree* tree, Node* node)
 {
     assert(node);
     assert(tree);
@@ -420,17 +419,18 @@ enum Status CreateNewNode(struct Tree* tree, struct Node* node)
     size_t len = MAX_LEN;
     char* new_object = NULL;
 
-    printf("I don't know this object\n");
-    printf("Enter its name: ");
+    printf("Я не знаю такого объекта\n");
+    printf("Введите его имя: ");
 
-    getline(&new_object, &len, stdin);
+    my_getline(&new_object, &len, stdin);
 
-    printf("What is the difference between %s and a %s?: ", new_object,
-                                                            node->data);
+    printf("Чем %s отличается от %s?: ", new_object,
+                                         node->data);
+
     node->right = NodeCtor(node->data, node);
     node->left = NodeCtor(new_object, node);
 
-    getline(&node->data, &len, stdin);
+    my_getline(&node->data, &len, stdin);
 
     free(new_object);
     new_object = NULL;
@@ -442,7 +442,7 @@ enum Status CreateNewNode(struct Tree* tree, struct Node* node)
     return success;
 }
 
-void UpdateDataBase(struct Node* node, FILE* database_file)
+void UpdateDataBase(Node* node, FILE* database_file)
 {
     assert(node);
     assert(database_file);
@@ -482,7 +482,7 @@ void OpenLogFile(const char* log_file_name)
     fprintf(log_file, "<pre>\n");
 }
 
-void DeleteNode(struct Tree* tree, struct Node* node, struct Buffer* buffer)
+void DeleteNode(Tree* tree, Node* node, Buffer* buffer)
 {
     assert(node);
     assert(tree);
@@ -526,7 +526,7 @@ void DeleteNode(struct Tree* tree, struct Node* node, struct Buffer* buffer)
     node->right = NULL;
 }
 
-enum Status WriteDataBaseInFile(struct Tree* tree, const char* database_file_name)
+ Status WriteDataBaseInFile(Tree* tree, const char* database_file_name)
 {
     assert(database_file_name);
 
@@ -544,7 +544,7 @@ enum Status WriteDataBaseInFile(struct Tree* tree, const char* database_file_nam
     return success;
 }
 
-void TreeDtor(struct Tree* tree, struct Buffer* buffer)
+void TreeDtor(Tree* tree, Buffer* buffer)
 {
     DeleteNode(tree, tree->root, buffer);
 
@@ -553,7 +553,7 @@ void TreeDtor(struct Tree* tree, struct Buffer* buffer)
     tree->size = 0;
 }
 
-ssize_t getline(char** dest, size_t* n, FILE* file)
+ssize_t my_getline(char** dest, size_t* n, FILE* file)
 {
     assert(dest != NULL);
     assert(file != NULL);
@@ -572,12 +572,14 @@ ssize_t getline(char** dest, size_t* n, FILE* file)
 
     while(true)
     {
-        char_from_file = (char)fgetc(file);
+        int inp_c = fgetc(file);
 
-        if (char_from_file == EOF)
+        if (inp_c == EOF)
             return -1;
 
-        else if (char_from_file == '\n')
+        char_from_file = (char)inp_c;
+
+        if (char_from_file == '\n')
             break;
 
         else if (counter > *n - 1)
@@ -610,7 +612,7 @@ ssize_t getline(char** dest, size_t* n, FILE* file)
     return counter;
 }
 
-void BufferDtor(struct Buffer* buffer)
+void BufferDtor(Buffer* buffer)
 {
     assert(buffer);
 
@@ -631,35 +633,3 @@ bool IsDinamicMemory(void* ptr, void* buffer_ptr, int size)
 
     return true;
 }
-
-void PrintAndSpeak(const char* message, ...)
-{
-    assert(message);
-
-    va_list args = {};
-    va_start(args, message);
-
-    const int COMMAND_SIZE = 500;
-    const int MESSAGE_SIZE = 500;
-
-    char* new_message = (char* )calloc(MESSAGE_SIZE, sizeof(char));
-
-    vsnprintf(new_message, MESSAGE_SIZE + 1, message, args);
-
-    vfprintf(stdout, message, args);
-
-    va_end(args);
-
-    char command[COMMAND_SIZE] = {};
-
-    snprintf(command, COMMAND_SIZE,
-
-        "PowerShell -Command \"$v=New-Object -ComObject SAPI.SpVoice;$v.Speak('%s')\" >nul",
-
-        new_message);
-
-    system(command);
-    free(new_message);
-    new_message = NULL;
-}
-

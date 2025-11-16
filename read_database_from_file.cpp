@@ -6,7 +6,7 @@
 #include "akinator_get_set_funcs.h"
 #include "read_database_from_file.h"
 
-enum Status GetDataBaseFromFile(struct Buffer* buffer,
+Status GetDataBaseFromFile(Buffer* buffer,
                                 const char* input_filename)
 {
     assert(input_filename != NULL);
@@ -46,41 +46,7 @@ enum Status GetDataBaseFromFile(struct Buffer* buffer,
     return success;
 }
 
-void ConvertUnicodes(unsigned char* source, unsigned char* dest)
-{
-    assert(source);
-    assert(dest);
-
-    size_t source_index = 0;
-    size_t dest_index = 0;
-
-    while(source[source_index] != '\0')
-    {
-        unsigned char sym = source[source_index];
-        unsigned char next_sym = source[source_index + 1];
-
-        if ((sym & 0xE0) == 0xC0 && (next_sym & 0xC0) == 0x80)
-        {
-            printf("Зашел сюда %d %d\n", sym, next_sym);
-            int unicode = ((sym & 0x1F) << 6) | (next_sym & 0x3F);
-
-            if (unicode >= 0x0410 && unicode <= 0x042F)
-                dest[dest_index++] = (char)(0xC0 + (unicode - 0x0410));
-
-            source_index += 2;
-        }
-
-        else
-        {
-            printf("БЛЯ Зашел сюда %d %d\n", sym, next_sym);
-            dest[dest_index++] = source[source_index++];
-        }
-    }
-
-    dest[dest_index] = '\0';
-}
-
-struct Node* FillNodeDataFromBuffer(char** cur_pos, int* size, struct Node* parent)
+Node* FillNodeDataFromBuffer(char** cur_pos, int* size, Node* parent)
 {
     assert(cur_pos);
 
@@ -103,7 +69,7 @@ struct Node* FillNodeDataFromBuffer(char** cur_pos, int* size, struct Node* pare
 
         SkipSpaces(cur_pos);
 
-        struct Node* node = (Node*)calloc(1, sizeof(Node));
+        Node* node = (Node*)calloc(1, sizeof(Node));
         node->data = RaedName(*cur_pos);
         node->parent = parent;
 

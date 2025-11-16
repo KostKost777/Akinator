@@ -6,27 +6,27 @@
 
 //GET
 
-struct Node* GetLeft(struct Node* node)
+ Node* GetLeft( Node* node)
 {
     assert(node);
 
     return node->left;
 }
 
-struct Node* GetRight(struct Node* node)
+ Node* GetRight( Node* node)
 {
     assert(node);
 
     return node->right;
 }
 
-struct Node* GetRoot(struct Tree* tree)
+ Node* GetRoot( Tree* tree)
 {
     assert(tree);
     return tree->root;
 }
 
-int GetSize(struct Tree* tree)
+int GetSize( Tree* tree)
 {
     assert(tree);
 
@@ -35,21 +35,21 @@ int GetSize(struct Tree* tree)
 
 //SET
 
-void SetLeft(struct Node* node, struct Node* new_left)
+void SetLeft( Node* node,  Node* new_left)
 {
     assert(node);
 
     node->left = new_left;
 }
 
-void SetRight(struct Node* node, struct Node* new_right)
+void SetRight( Node* node,  Node* new_right)
 {
     assert(node);
 
     node->right = new_right;
 }
 
-void SetRoot(struct Tree* tree, struct Node* new_root)
+void SetRoot( Tree* tree,  Node* new_root)
 {
     assert(tree);
 
