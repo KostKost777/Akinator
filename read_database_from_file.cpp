@@ -7,7 +7,7 @@
 #include "read_database_from_file.h"
 
 Status GetDataBaseFromFile(Buffer* buffer,
-                                const char* input_filename)
+                           const char* input_filename)
 {
     assert(input_filename != NULL);
 
