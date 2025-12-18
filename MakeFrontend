@@ -1,0 +1,32 @@
+FLAGS = -g -DDEBUG
+all: front
+
+front: write_tree_in_file_funcs.o tree_funcs.o syntactic_analysis.o dump_funcs.o orig_lexicon_of_lang.o hash_funcs.o read_from_file_funcs.o frontend_main.o lexical_analysis.o
+	g++ $(FLAGS) write_tree_in_file_funcs.o tree_funcs.o syntactic_analysis.o dump_funcs.o orig_lexicon_of_lang.o hash_funcs.o read_from_file_funcs.o frontend_main.o lexical_analysis.o -o front
+
+frontend_main.o: frontend_main.cpp
+	g++ $(FLAGS) -c frontend_main.cpp
+
+lexical_analysis.o: lexical_analysis.cpp
+	g++ $(FLAGS) -c lexical_analysis.cpp
+
+read_from_file_funcs.o: read_from_file_funcs.cpp
+	g++ $(FLAGS) -c read_from_file_funcs.cpp
+
+hash_funcs.o: hash_funcs.cpp
+	g++ $(FLAGS) -c hash_funcs.cpp
+
+orig_lexicon_of_lang.o: orig_lexicon_of_lang.cpp
+	g++ $(FLAGS) -c orig_lexicon_of_lang.cpp
+
+dump_funcs.o: dump_funcs.cpp
+	g++ $(FLAGS) -c dump_funcs.cpp
+
+syntactic_analysis.o: syntactic_analysis.cpp
+	g++ $(FLAGS) -c syntactic_analysis.cpp
+
+tree_funcs.o: tree_funcs.cpp
+	g++ $(FLAGS) -c tree_funcs.cpp
+
+write_tree_in_file_funcs.o: write_tree_in_file_funcs.cpp
+	g++ $(FLAGS) -c write_tree_in_file_funcs.cpp

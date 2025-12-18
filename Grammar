@@ -1,0 +1,25 @@
+Grammar         ::= {InitOfFunc}* {Operator "нах"}*
+InitOfFunc      ::= "йопта" Ident "гыы" ArgsOfInitFunc "жыы" "гоп" {Operator "нах"} "стоп"
+ArgsOfInitFunc  ::= ["йопта" Ident] {',' "йопта" Ident}*
+Operator        ::= { If | While | Return | Print | Input | Assign }
+If              ::= "вилкойвглаз" "гыы" CompareOp "жыы" "гоп" {Operator} "стоп"
+While           ::= "потрещим" "гыы" CompareOp "жыы" "гоп" {Operator} "стоп"
+Return          ::= "шухер" "гыы" CompareOp "жыы" "гоп" {Operator} "стоп"
+Print           ::= "малевать" "гыы" CompareOp "жыы" "гоп" {Operator} "стоп"
+Input           ::= "войтивхату" "гыы" CompareOp "жыы" "гоп" {Operator} "стоп"
+Assign          ::= Ident '=' CompareFirstOp "нах"
+CompareFirstOp  ::= CompareSecondOp  { ['||'] CompareSecondOp }*
+CompareSecondOp ::= CompareThirdOp { ['&&'] CompareThirdOp}*
+CompareThirdOp  ::= CompareFourthOp { ['!=' '=='] CompareFourthOp}*
+CompareFourthOp ::= AddSubOp { ['<' '>' '>=' '<='] AddSubOp}*
+AddSubOp        ::= MulDivOp { ['+' '-'] MulDivOp}*
+MulDivOp        ::= PowModOp { ['*' '/'] PovModOp}*
+PowModOp        ::= MostPreority { ['^'] MostPreority}*
+MostPreority    ::= "гыы" AddSubOp "жыы" | Number | Ident | Func | Sqrt
+Sqrt            ::= "sqrt" "гыы" CompareFirstOp "жыы"
+Func            ::= Ident "гыы" FuncArgs "жыы"
+FuncArgs        ::= [Ident] {',' Ident}*
+Ident           ::= {["a"-"z" "A"-"Z" '_']}*{"a"-"z" "A"-"Z" '_' '0'-'9'}
+Number          ::= {['0'-'9']}
+
+
